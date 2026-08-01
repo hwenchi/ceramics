@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portal
+  namespace: ceramics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: portal
+  template:
+    metadata:
+      labels:
+        app: portal
+    spec:
+      serviceAccountName: portal
+      containers:
+        - name: portal
+          image: ghcr.io/hwenchi/ceramics/portal:main
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: CERAMIC_NAMESPACE
+              value: ceramics
+            - name: CERAMIC_IMAGE
+              value: ghcr.io/hwenchi/ceramics/ceramic:main
+            - name: PORTAL_ORIGIN
+              value: https://ceramics.software-dev.ncsa.illinois.edu
+            - name: CERAMIC_DOMAIN
+              value: software-dev.ncsa.illinois.edu
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: portal
+  namespace: ceramics
+spec:
+  selector:
+    app: portal
+  ports:
+    - port: 80
+      targetPort: http
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: portal
+  namespace: ceramics
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: HostRegexp(`^(ceramics|ceramic-[0-9]+-(clay|glaze))\.software-dev\.ncsa\.illinois\.edu$`)
+      kind: Rule
+      services:
+        - name: portal
+          port: 80
+  tls:
+    certResolver: letsencrypt

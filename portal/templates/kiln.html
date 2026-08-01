@@ -1,0 +1,24 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{.Name}}</title>
+  <style>
+    body { margin: 0; height: 100vh; display: flex; flex-direction: column; font-family: sans-serif; }
+    header { display: flex; align-items: center; gap: 1rem; padding: 0.5rem 1rem; border-bottom: 1px solid #ccc; }
+    .panes { flex: 1; display: flex; }
+    .panes iframe { flex: 1; border: none; border-right: 1px solid #ccc; }
+    .panes iframe:last-child { border-right: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <strong>{{.Name}}</strong>
+    <a href="{{.GlazeURL}}" target="_blank">open glaze in new tab</a>
+  </header>
+  <div class="panes">
+    <iframe src="{{.ClayURL}}"></iframe>
+    <iframe src="{{.GlazeURL}}"></iframe>
+  </div>
+</body>
+</html>
