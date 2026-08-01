@@ -7,24 +7,20 @@
     body { margin: 0; height: 100vh; display: flex; flex-direction: column; font-family: sans-serif; }
     header { display: flex; align-items: center; gap: 1rem; padding: 0.5rem 1rem; border-bottom: 1px solid #ccc; }
     .panes { flex: 1; display: flex; }
-    .panes > iframe { flex: 1; border: none; border-right: 1px solid #ccc; }
-    .pane { flex: 1; display: flex; flex-direction: column; }
-    .pane-bar { display: flex; justify-content: flex-end; padding: 0.2rem 0.4rem; border-bottom: 1px solid #eee; }
-    .pane iframe { flex: 1; border: none; }
+    .panes iframe { flex: 1; border: none; border-right: 1px solid #ccc; }
+    .panes iframe:last-child { border-right: none; }
   </style>
 </head>
 <body>
   <header>
     <strong>{{.Name}}</strong>
     <a href="{{.GlazeURL}}" target="_blank">open glaze in new tab</a>
+    <button onclick="document.getElementById('glaze').src += ''">reglaze</button>
     <small>new ceramics can take a minute for the glaze to set — if your browser warns about the connection, give it a moment and reload</small>
   </header>
   <div class="panes">
     <iframe src="{{.ClayURL}}"></iframe>
-    <div class="pane">
-      <div class="pane-bar"><button onclick="document.getElementById('glaze').src += ''">reload</button></div>
-      <iframe id="glaze" src="{{.GlazeURL}}"></iframe>
-    </div>
+    <iframe id="glaze" src="{{.GlazeURL}}"></iframe>
   </div>
 </body>
 </html>
