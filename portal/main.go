@@ -4,12 +4,23 @@ import (
 	"log"
 	"net/http"
 	"os"
+
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/kubernetes"
 )
 
 func main() {
-	clientset, err := getClientset()
+	cfg, err := getConfig()
 	if err != nil {
-		log.Fatalf("k8s client: %v", err)
+		log.Fatalf("k8s config: %v", err)
+	}
+	clientset, err := kubernetes.NewForConfig(cfg)
+	if err != nil {
+		log.Fatalf("k8s clientset: %v", err)
+	}
+	dynamicClient, err := dynamic.NewForConfig(cfg)
+	if err != nil {
+		log.Fatalf("k8s dynamic client: %v", err)
 	}
 
 	v, err := clientset.Discovery().ServerVersion()
@@ -26,15 +37,21 @@ func main() {
 	if image == "" {
 		image = "ghcr.io/hwenchi/ceramics/ceramic:main"
 	}
-	s := &server{clientset: clientset, namespace: namespace, image: image}
+	domain := os.Getenv("CERAMIC_DOMAIN")
+	if domain == "" {
+		domain = "software-dev.ncsa.illinois.edu"
+	}
+	s := &server{
+		clientset:     clientset,
+		dynamicClient: dynamicClient,
+		namespace:     namespace,
+		image:         image,
+		domain:        domain,
+	}
 
 	portalOrigin := os.Getenv("PORTAL_ORIGIN")
 	if portalOrigin == "" {
 		portalOrigin = "https://ceramics.software-dev.ncsa.illinois.edu"
-	}
-	domain := os.Getenv("CERAMIC_DOMAIN")
-	if domain == "" {
-		domain = "software-dev.ncsa.illinois.edu"
 	}
 
 	apiMux := http.NewServeMux()

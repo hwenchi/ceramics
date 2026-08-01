@@ -37,10 +37,11 @@ type kilnHandler struct {
 
 func (k *kilnHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	name := r.PathValue("name")
+	clay, glaze := ceramicHostnames(name, k.domain)
 	page := kilnPage{
 		Name:     name,
-		ClayURL:  "https://" + name + claySuffix + "." + k.domain,
-		GlazeURL: "https://" + name + glazeSuffix + "." + k.domain,
+		ClayURL:  "https://" + clay,
+		GlazeURL: "https://" + glaze,
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := kilnTemplate.Execute(w, page); err != nil {

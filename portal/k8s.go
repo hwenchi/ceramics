@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"strconv"
@@ -11,6 +12,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -26,26 +28,29 @@ const (
 var ceramicNameRe = regexp.MustCompile(`^ceramic-(\d+)$`)
 
 type server struct {
-	clientset *kubernetes.Clientset
-	namespace string
-	image     string
+	clientset     *kubernetes.Clientset
+	dynamicClient dynamic.Interface
+	namespace     string
+	image         string
+	domain        string // e.g. "software-dev.ncsa.illinois.edu"
 }
 
-// getClientset connects to the cluster: via KUBECONFIG when set (local dev),
-// or in-cluster config when running as a pod (production).
-func getClientset() (*kubernetes.Clientset, error) {
+// getConfig loads the cluster config: via KUBECONFIG when set (local dev),
+// or in-cluster config when running as a pod (production). Shared by both
+// the typed clientset (pods) and the dynamic client (the IngressRoute CRD).
+func getConfig() (*rest.Config, error) {
 	if kubeconfig := os.Getenv("KUBECONFIG"); kubeconfig != "" {
 		cfg, err := clientcmd.BuildConfigFromFlags("", kubeconfig)
 		if err != nil {
 			return nil, fmt.Errorf("build config from kubeconfig: %w", err)
 		}
-		return kubernetes.NewForConfig(cfg)
+		return cfg, nil
 	}
 	cfg, err := rest.InClusterConfig()
 	if err != nil {
 		return nil, fmt.Errorf("build in-cluster config: %w", err)
 	}
-	return kubernetes.NewForConfig(cfg)
+	return cfg, nil
 }
 
 // listPods returns all ceramic pods in the portal's namespace.
@@ -112,8 +117,9 @@ func buildPodSpec(name, namespace, image string) *corev1.Pod {
 			RestartPolicy: corev1.RestartPolicyNever,
 			Containers: []corev1.Container{
 				{
-					Name:  "ceramic",
-					Image: image,
+					Name:            "ceramic",
+					Image:           image,
+					ImagePullPolicy: corev1.PullAlways,
 					Ports: []corev1.ContainerPort{
 						{Name: "shell", ContainerPort: 7681},
 						{Name: "app", ContainerPort: 8080},
@@ -164,17 +170,41 @@ func (s *server) createCeramic(ctx context.Context) (*corev1.Pod, error) {
 
 	name := nextName(pods)
 	pod := buildPodSpec(name, s.namespace, s.image)
-	return s.clientset.CoreV1().Pods(s.namespace).Create(ctx, pod, metav1.CreateOptions{})
+	created, err := s.clientset.CoreV1().Pods(s.namespace).Create(ctx, pod, metav1.CreateOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	clay, glaze := ceramicHostnames(name, s.domain)
+	err = s.setIngressRouteDomains(ctx, func(domains []interface{}) []interface{} {
+		return domainListWith(domainListWith(domains, clay), glaze)
+	})
+	if err != nil {
+		// Non-fatal: the ceramic still works, just without a real cert
+		// until this is retried — see the kiln page's note about that.
+		log.Printf("warning: could not register domains for %s: %v", name, err)
+	}
+
+	return created, nil
 }
 
 // deleteCeramic deletes a ceramic pod by name. Deleting one that's already
 // gone is not an error — the caller just wanted it gone.
 func (s *server) deleteCeramic(ctx context.Context, name string) error {
 	err := s.clientset.CoreV1().Pods(s.namespace).Delete(ctx, name, metav1.DeleteOptions{})
-	if apierrors.IsNotFound(err) {
-		return nil
+	if err != nil && !apierrors.IsNotFound(err) {
+		return err // a real failure; NotFound just means it's already gone, which is fine
 	}
-	return err
+
+	clay, glaze := ceramicHostnames(name, s.domain)
+	ingressErr := s.setIngressRouteDomains(ctx, func(domains []interface{}) []interface{} {
+		return domainListWithout(domainListWithout(domains, clay), glaze)
+	})
+	if ingressErr != nil {
+		log.Printf("warning: could not remove domains for %s: %v", name, ingressErr)
+	}
+
+	return nil
 }
 
 // resolveIP looks up a ceramic's pod IP by name — the one piece of the

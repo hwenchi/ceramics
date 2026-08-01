@@ -42,6 +42,12 @@ const (
 	appPort     = "8080"
 )
 
+// ceramicHostnames builds a ceramic's two surface hostnames from its name
+// and the cluster's domain (e.g. "software-dev.ncsa.illinois.edu").
+func ceramicHostnames(name, domain string) (clay, glaze string) {
+	return name + claySuffix + "." + domain, name + glazeSuffix + "." + domain
+}
+
 // parseHost splits a Host header like "ceramic-01-clay.software-dev...:443"
 // into the ceramic name ("ceramic-01") and the backend port for the surface
 // named by the suffix ("-clay" or "-glaze"). ok is false if the host

@@ -17,6 +17,7 @@ spec:
       containers:
         - name: portal
           image: ghcr.io/hwenchi/ceramics/portal:main
+          imagePullPolicy: Always
           ports:
             - name: http
               containerPort: 8000
@@ -73,3 +74,5 @@ spec:
           port: 80
   tls:
     certResolver: letsencrypt
+    domains:
+      - main: ceramics.software-dev.ncsa.illinois.edu
