@@ -1,5 +1,13 @@
 FROM debian:12-slim
 
+# This container runs with all capabilities dropped, so apt's internal
+# privilege-drop to the _apt user (for the download step) fails outright —
+# even root can't setuid()/setgid() without CAP_SETUID/CAP_SETGID. That
+# sandboxing protects a multi-purpose host from a compromised download; a
+# disposable, single-tenant, already-fully-root ceramic has no such thing
+# to protect, so just tell apt to skip it.
+RUN echo 'APT::Sandbox::User "root";' > /etc/apt/apt.conf.d/99no-sandbox
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
         bash \
         tmux \

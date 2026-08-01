@@ -126,9 +126,7 @@ func buildPodSpec(name, namespace, image string) *corev1.Pod {
 					},
 					SecurityContext: &corev1.SecurityContext{
 						AllowPrivilegeEscalation: &falseVal,
-						Capabilities: &corev1.Capabilities{
-							Drop: []corev1.Capability{"ALL"},
-						},
+						// No dropped capabilities: root here should behave like real root (apt, chown, ...).
 					},
 					Resources: corev1.ResourceRequirements{
 						Requests: corev1.ResourceList{
