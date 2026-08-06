@@ -1,22 +1,11 @@
 # Ceramics
 
-Before you cooked your first meal, you were fed. Someone who knew how to cook stood between you and the stove, prepared the food, and placed a plate in front of you. It was all you had ever known. The possibility that you could make the meal yourself never occurred to you.
+Before you cooked your first meal, you were fed. Someone who knew how to cook stood between you and the stove, prepared the food, and placed a plate in front of you. That was the only way you had ever encountered food. The possibility that you could make the meal yourself never occurred to you.
 
-This is how many people encounter computers. They use applications built by others, but rarely see the computer itself as something they can shape. The machine has always been programmable. The missing piece was not capability, but a way for more people to enter into a creative relationship with it.
+This is how many people encounter computers. They use applications built by others, but rarely see the computer itself as something they can shape. The machine has always been programmable. What has been missing is a way for more people to form a direct relationship with it.
 
-Programming has traditionally required learning specialized knowledge before anything can be built. Languages, tools, and systems create a barrier between an idea and its realization.
+Traditionally, programming requires learning specialized knowledge before anything can be built. Languages, tools, and systems create a barrier between an idea and its realization. Coding agents change this by allowing someone to begin with an idea and discover, through making, the knowledge needed to bring it into existence. They do not remove the need for thinking or refinement; they make exploration possible before mastery.
 
-Coding agents change where that process begins. They allow someone to start with an idea and discover, through making, what is needed to bring it into existence. They do not remove the need for thinking or refinement. They simply provide a different entry point.
-
-But people still need somewhere to explore.
-
-A ceramic is a temporary computational environment with access to the machine and nothing already built in. It is a place to create, modify, break, and start again.
-
-The first thing someone makes will probably not be very good. That is part of the process. The artifact reveals the gap between what they imagined and what they actually created. That gap is where learning happens.
-
-Often, the first thing people create is an interface because it is immediately visible. A button changes. A page responds. Something imagined becomes something they can interact with. The computer becomes less like a tool they consume and more like a material they can shape.
-
-A ceramic is temporary by design. Its purpose is not to replace existing software, but to give people a way to discover the computer as a creative medium.
+But exploration still needs a place to happen. A ceramic is a temporary computational environment with direct access to the machine and nothing already built in. It is a place to create, modify, break, and start again. Its purpose is not to replace existing software, but to let people discover the computer as something they can shape.
 
 The goal is simple: to give someone their first experience of creating with a computer.
-
