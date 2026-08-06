@@ -1,6 +1,6 @@
 # Ceramics
 
-Before you cook your first meal, you are fed. Someone who knows how to cook stands between you and the stove, prepares the food, and places a plate in front of you. If that is all you have ever known, cooking is not something you consider. The possibility that you could make the meal yourself never enters the picture.
+Before you cooked your first meal, you were fed. Someone who knew how to cook stood between you and the stove, prepared the food, and placed a plate in front of you. It was all you had ever known. The possibility that you could make the meal yourself never occurred to you.
 
 This is how many people encounter computers. They use applications built by others, but rarely see the computer itself as something they can shape. The machine has always been programmable. The missing piece was not capability, but a way for more people to enter into a creative relationship with it.
 
