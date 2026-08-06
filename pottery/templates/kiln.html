@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>{{.Name}}</title>
+  <style>
+    :root {
+      --surface: #ffffff;
+      --text: #2b2521;
+      --muted: #8a7f74;
+      --border: #e8e0d6;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --surface: #262019;
+        --text: #ede6de;
+        --muted: #9c8f81;
+        --border: #3a322b;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    .panes { height: 100%; display: flex; }
+    .panes iframe { flex: 1; border: none; }
+    button {
+      font: inherit;
+      font-size: 0.85rem;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+    button:hover { border-color: var(--muted); }
+    .reglaze { position: fixed; top: 0.6rem; right: 0.6rem; }
+    .toggle-clay { position: fixed; top: 0.6rem; left: 0.6rem; }
+    .clay { scrollbar-width: none; }
+    .clay::-webkit-scrollbar { display: none; }
+  </style>
+  <script src="/static/alpine.min.js" defer></script>
+</head>
+<body x-data="{ showClay: true }">
+  <button class="toggle-clay" @click="showClay = !showClay" x-text="showClay ? 'cover clay' : 'uncover clay'"></button>
+  <button class="reglaze" @click="$refs.glaze.src += ''">reglaze</button>
+  <div class="panes">
+    <iframe class="clay" x-show="showClay" src="{{.ClayURL}}"></iframe>
+    <iframe x-ref="glaze" src="{{.GlazeURL}}"></iframe>
+  </div>
+</body>
+</html>

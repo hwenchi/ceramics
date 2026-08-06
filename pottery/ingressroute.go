@@ -15,7 +15,7 @@ var ingressRouteGVR = schema.GroupVersionResource{
 	Resource: "ingressroutes",
 }
 
-const portalIngressRouteName = "portal"
+const potteryIngressRouteName = "pottery"
 
 // domainListWithout returns domains with any entry for the given host
 // removed (a no-op if it's not present).
@@ -42,14 +42,14 @@ func domainListWith(domains []interface{}, host string) []interface{} {
 	return append(domains, map[string]interface{}{"main": host})
 }
 
-// setIngressRouteDomains reads the portal IngressRoute's spec.tls.domains,
+// setIngressRouteDomains reads the pottery IngressRoute's spec.tls.domains,
 // applies fn to the list, and writes it back. No retry-on-conflict: this
 // object is touched at most a few times a month (ceramic create/delete),
 // so a lost update from a concurrent edit is not worth guarding against.
 func (s *server) setIngressRouteDomains(ctx context.Context, fn func([]interface{}) []interface{}) error {
 	client := s.dynamicClient.Resource(ingressRouteGVR).Namespace(s.namespace)
 
-	obj, err := client.Get(ctx, portalIngressRouteName, metav1.GetOptions{})
+	obj, err := client.Get(ctx, potteryIngressRouteName, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("get IngressRoute: %w", err)
 	}

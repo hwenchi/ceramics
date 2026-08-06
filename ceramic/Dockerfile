@@ -1,12 +1,6 @@
 FROM debian:12-slim
 
-# This container runs with all capabilities dropped, so apt's internal
-# privilege-drop to the _apt user (for the download step) fails outright —
-# even root can't setuid()/setgid() without CAP_SETUID/CAP_SETGID. That
-# sandboxing protects a multi-purpose host from a compromised download; a
-# disposable, single-tenant, already-fully-root ceramic has no such thing
-# to protect, so just tell apt to skip it.
-RUN echo 'APT::Sandbox::User "root";' > /etc/apt/apt.conf.d/99no-sandbox
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         bash \
@@ -27,8 +21,10 @@ RUN curl -fsSL -o /usr/local/bin/ttyd \
 
 RUN npm install -g @anthropic-ai/claude-code
 
+COPY CLAUDE.md /root/.claude/CLAUDE.md
+
 WORKDIR /workspace
 
 EXPOSE 7681 8080
 
-CMD ["ttyd", "-W", "-p", "7681", "tmux", "new", "-A", "-s", "main"]
+CMD ["ttyd", "-W", "-p", "7681", "tmux", "new", "-A", "-s", "main", "claude"]

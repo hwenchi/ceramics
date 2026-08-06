@@ -1,4 +1,4 @@
-module github.com/hwenchi/ceramics/portal
+module github.com/hwenchi/ceramics/pottery
 
 go 1.26.0
 

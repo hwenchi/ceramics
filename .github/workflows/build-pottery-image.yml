@@ -1,11 +1,11 @@
-name: build-portal-image
+name: build-pottery-image
 
 on:
   push:
     branches: [main]
     paths:
-      - "portal/**"
-      - ".github/workflows/build-portal-image.yml"
+      - "pottery/**"
+      - ".github/workflows/build-pottery-image.yml"
   workflow_dispatch: {}
 
 permissions:
@@ -29,11 +29,11 @@ jobs:
       - uses: docker/metadata-action@v6
         id: meta
         with:
-          images: ghcr.io/${{ github.repository }}/portal
+          images: ghcr.io/${{ github.repository }}/pottery
 
       - uses: docker/build-push-action@v7
         with:
-          context: portal
+          context: pottery
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}

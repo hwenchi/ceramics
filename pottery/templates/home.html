@@ -1,0 +1,187 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>ceramics</title>
+  <style>
+    :root {
+      --bg: #faf7f2;
+      --surface: #ffffff;
+      --text: #2b2521;
+      --muted: #8a7f74;
+      --border: #e8e0d6;
+      --accent: #b5603f;
+      --accent-hover: #9a4f34;
+      --danger: #a84433;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1c1815;
+        --surface: #262019;
+        --text: #ede6de;
+        --muted: #9c8f81;
+        --border: #3a322b;
+        --accent: #d97b56;
+        --accent-hover: #e8926f;
+        --danger: #e0685a;
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 3rem 1.5rem;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.5;
+    }
+
+    main {
+      max-width: 44rem;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      margin: 0 0 0.25rem;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin: 0 0 1.5rem;
+    }
+
+    button {
+      font: inherit;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      padding: 0.45rem 0.9rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    button:hover { border-color: var(--muted); }
+
+    .create {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+      margin: 0 0 2rem;
+    }
+    .create:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+
+    .empty {
+      color: var(--muted);
+    }
+
+    .rows { display: flex; flex-direction: column; gap: 0.75rem; }
+
+    .row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      padding: 0.9rem 1.1rem;
+    }
+
+    .name { flex: 1; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
+
+    .glaze-link {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-decoration: none;
+      color: #fff;
+      padding: 0.15rem 0.6rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+      box-shadow: 0 1px 4px rgba(181, 96, 63, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+    .glaze-link:hover { filter: brightness(1.1); }
+
+    .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .actions button { font-size: 0.85rem; padding: 0.35rem 0.7rem; }
+    .actions .delete { color: var(--danger); }
+    .actions .delete:hover { border-color: var(--danger); }
+
+    .dot {
+      display: inline-block;
+      width: 0.55em;
+      height: 0.55em;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    [x-cloak] { display: none !important; }
+  </style>
+  <script src="/static/alpine.min.js" defer></script>
+</head>
+<body x-data="ceramicsApp()" x-init="refresh()">
+  <main>
+    <h1>ceramics</h1>
+    <p class="subtitle">turning porcelain back into clay</p>
+    <button class="create" @click="create()">create</button>
+
+    <p class="empty" x-show="ceramics.length === 0" x-cloak>nothing here yet — make one</p>
+
+    <div class="rows" x-show="ceramics.length > 0" x-cloak>
+      <template x-for="c in ceramics" :key="c.name">
+        <div class="row">
+          <span class="dot" :style="{ background: dotColor(c.phase) }" :title="phaseLabel(c.phase)"></span>
+          <span class="name">
+            <span x-text="c.name"></span>
+            <a class="glaze-link" :href="c.glazeURL" target="_blank">glaze</a>
+          </span>
+          <div class="actions">
+            <button @click="window.open(c.kilnURL, '_blank')">kiln</button>
+            <button class="delete" @click="smash(c.name)">delete</button>
+          </div>
+        </div>
+      </template>
+    </div>
+  </main>
+
+  <script>
+    function ceramicsApp() {
+      return {
+        ceramics: [],
+
+        async refresh() {
+          const res = await fetch('/api/ceramics');
+          this.ceramics = await res.json();
+        },
+
+        phaseLabel(phase) {
+          if (phase === 'Pending') return 'warming up';
+          if (phase === 'Running') return 'ready';
+          return phase;
+        },
+
+        dotColor(phase) {
+          if (phase === 'Pending') return '#e6a700';
+          if (phase === 'Running') return '#2ecc71';
+          return '#999';
+        },
+
+        async smash(name) {
+          if (!confirm('this can\'t be undone unless you already pushed it somewhere')) {
+            return;
+          }
+          await fetch('/api/ceramics/' + encodeURIComponent(name), { method: 'DELETE' });
+          await this.refresh();
+        },
+
+        async create() {
+          await fetch('/api/ceramics', { method: 'POST' });
+          await this.refresh();
+        },
+      };
+    }
+  </script>
+</body>
+</html>

@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"regexp"
-	"strconv"
 
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -24,8 +22,6 @@ const (
 	labelApp      = "app"
 	labelAppValue = "ceramic"
 )
-
-var ceramicNameRe = regexp.MustCompile(`^ceramic-(\d+)$`)
 
 type server struct {
 	clientset     *kubernetes.Clientset
@@ -53,7 +49,7 @@ func getConfig() (*rest.Config, error) {
 	return cfg, nil
 }
 
-// listPods returns all ceramic pods in the portal's namespace.
+// listPods returns all ceramic pods in the pottery's namespace.
 func (s *server) listPods(ctx context.Context) ([]corev1.Pod, error) {
 	list, err := s.clientset.CoreV1().Pods(s.namespace).List(ctx, metav1.ListOptions{
 		LabelSelector: fmt.Sprintf("%s=%s", labelApp, labelAppValue),
@@ -72,26 +68,6 @@ func checkCapacity(pods []corev1.Pod) error {
 		return fmt.Errorf("at capacity: %d/%d ceramics already exist", len(pods), maxCeramics)
 	}
 	return nil
-}
-
-// nextName derives the next sequential ceramic name from live cluster state,
-// so a portal restart never collides with a ceramic that's still running.
-func nextName(pods []corev1.Pod) string {
-	max := 0
-	for _, p := range pods {
-		m := ceramicNameRe.FindStringSubmatch(p.Name)
-		if m == nil {
-			continue
-		}
-		n, err := strconv.Atoi(m[1])
-		if err != nil {
-			continue
-		}
-		if n > max {
-			max = n
-		}
-	}
-	return fmt.Sprintf("ceramic-%02d", max+1)
 }
 
 // buildPodSpec constructs a ceramic pod: no service-account token, user
@@ -155,8 +131,8 @@ func buildPodSpec(name, namespace, image string) *corev1.Pod {
 	}
 }
 
-// createCeramic lists existing ceramics to check capacity and derive the
-// next name, then creates the pod.
+// createCeramic lists existing ceramics to check capacity and pick a name,
+// then creates the pod.
 func (s *server) createCeramic(ctx context.Context) (*corev1.Pod, error) {
 	pods, err := s.listPods(ctx)
 	if err != nil {
@@ -166,7 +142,7 @@ func (s *server) createCeramic(ctx context.Context) (*corev1.Pod, error) {
 		return nil, err
 	}
 
-	name := nextName(pods)
+	name := randomName(pods)
 	pod := buildPodSpec(name, s.namespace, s.image)
 	created, err := s.clientset.CoreV1().Pods(s.namespace).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {

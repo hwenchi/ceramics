@@ -15,22 +15,31 @@ type resolver func(ctx context.Context, name string) (string, error)
 // by the Host header, on the port chosen by which surface it names.
 type ceramicProxy struct {
 	resolve resolver
-	// portalOrigin is the portal's own origin (e.g.
+	// potteryOrigin is the pottery's own origin (e.g.
 	// "https://ceramics.software-dev.ncsa.illinois.edu"), used to let the
-	// glaze surface be iframed by the portal despite whatever
+	// glaze surface be iframed by the pottery despite whatever
 	// frame-blocking headers the agent's app might send.
-	portalOrigin string
+	potteryOrigin string
+}
+
+// notYetGlazed serves a friendly placeholder instead of a raw connection
+// error when nothing is listening on the glaze port yet — the normal state
+// for a ceramic before anything's been built.
+func notYetGlazed(w http.ResponseWriter, r *http.Request, err error) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusServiceUnavailable)
+	w.Write([]byte("nothing here yet — ask claude to build something"))
 }
 
 // allowFraming strips any frame-blocking headers a response sets and
-// replaces them with a CSP that permits exactly the portal's own origin.
+// replaces them with a CSP that permits exactly the pottery's own origin.
 // Without this, an agent-scaffolded app (e.g. one using Helmet defaults)
-// could refuse to render inside the portal's iframe for reasons entirely
+// could refuse to render inside the pottery's iframe for reasons entirely
 // outside the agent's or the ceramic's control.
-func allowFraming(portalOrigin string) func(*http.Response) error {
+func allowFraming(potteryOrigin string) func(*http.Response) error {
 	return func(resp *http.Response) error {
 		resp.Header.Del("X-Frame-Options")
-		resp.Header.Set("Content-Security-Policy", "frame-ancestors "+portalOrigin)
+		resp.Header.Set("Content-Security-Policy", "frame-ancestors "+potteryOrigin)
 		return nil
 	}
 }
@@ -48,10 +57,10 @@ func ceramicHostnames(name, domain string) (clay, glaze string) {
 	return name + claySuffix + "." + domain, name + glazeSuffix + "." + domain
 }
 
-// parseHost splits a Host header like "ceramic-01-clay.software-dev...:443"
-// into the ceramic name ("ceramic-01") and the backend port for the surface
-// named by the suffix ("-clay" or "-glaze"). ok is false if the host
-// doesn't name a recognized surface.
+// parseHost splits a Host header like "cracked-vase-clay.software-dev...:443"
+// into the ceramic name ("cracked-vase") and the backend port for the
+// surface named by the suffix ("-clay" or "-glaze"). ok is false if the
+// host doesn't name a recognized surface.
 func parseHost(host string) (name string, port string, ok bool) {
 	label := host
 	if i := strings.IndexAny(label, ".:"); i != -1 {
@@ -87,7 +96,8 @@ func (p *ceramicProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		},
 	}
 	if port == appPort {
-		proxy.ModifyResponse = allowFraming(p.portalOrigin)
+		proxy.ModifyResponse = allowFraming(p.potteryOrigin)
+		proxy.ErrorHandler = notYetGlazed
 	}
 	proxy.ServeHTTP(w, r)
 }

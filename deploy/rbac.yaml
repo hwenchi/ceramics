@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: portal
+  name: pottery
   namespace: ceramics
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -15,17 +15,17 @@ rules:
     verbs: ["get", "list", "watch", "create", "delete"]
   - apiGroups: ["traefik.io"]
     resources: ["ingressroutes"]
-    resourceNames: ["portal"]
+    resourceNames: ["pottery"]
     verbs: ["get", "update"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: portal-ceramic-manager
+  name: pottery-ceramic-manager
   namespace: ceramics
 subjects:
   - kind: ServiceAccount
-    name: portal
+    name: pottery
     namespace: ceramics
 roleRef:
   apiGroup: rbac.authorization.k8s.io

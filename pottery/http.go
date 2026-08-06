@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"sort"
 
 	corev1 "k8s.io/api/core/v1"
 )
@@ -13,13 +14,20 @@ type Ceramic struct {
 	Name      string `json:"name"`
 	Phase     string `json:"phase"`
 	CreatedAt string `json:"createdAt"`
+	KilnURL   string `json:"kilnURL"`
+	ClayURL   string `json:"clayURL"`
+	GlazeURL  string `json:"glazeURL"`
 }
 
-func toCeramic(p corev1.Pod) Ceramic {
+func (s *server) toCeramic(p corev1.Pod) Ceramic {
+	clay, glaze := ceramicHostnames(p.Name, s.domain)
 	return Ceramic{
 		Name:      p.Name,
 		Phase:     string(p.Status.Phase),
 		CreatedAt: p.CreationTimestamp.UTC().Format("2006-01-02T15:04:05Z"),
+		KilnURL:   "/kiln/" + p.Name,
+		ClayURL:   "https://" + clay,
+		GlazeURL:  "https://" + glaze,
 	}
 }
 
@@ -29,11 +37,15 @@ func (s *server) handleList(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
+	sort.Slice(pods, func(i, j int) bool {
+		return pods[i].CreationTimestamp.After(pods[j].CreationTimestamp.Time)
+	})
 	ceramics := make([]Ceramic, 0, len(pods))
 	for _, p := range pods {
-		ceramics = append(ceramics, toCeramic(p))
+		ceramics = append(ceramics, s.toCeramic(p))
 	}
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store")
 	json.NewEncoder(w).Encode(ceramics)
 }
 
@@ -44,7 +56,7 @@ func (s *server) handleCreate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(toCeramic(*pod))
+	json.NewEncoder(w).Encode(s.toCeramic(*pod))
 }
 
 func (s *server) handleDelete(w http.ResponseWriter, r *http.Request) {

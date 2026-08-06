@@ -3,10 +3,10 @@ WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-RUN CGO_ENABLED=0 go build -o /portal .
+RUN CGO_ENABLED=0 go build -o /pottery .
 
 FROM gcr.io/distroless/static-debian12
-COPY --from=build /portal /portal
+COPY --from=build /pottery /pottery
 USER nonroot:nonroot
 EXPOSE 8000
-ENTRYPOINT ["/portal"]
+ENTRYPOINT ["/pottery"]
