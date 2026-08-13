@@ -76,7 +76,7 @@
   </style>
   <script src="/static/alpine.min.js" defer></script>
 </head>
-<body x-data="{ showClay: true, showBat: false }">
+<body x-data="{ showClay: true, showBat: false, batURL: '{{.BatURL}}' }">
   <button class="toggle-clay" @click="showClay = !showClay" x-text="showClay ? 'cover clay' : 'uncover clay'"></button>
   <button class="bat-toggle" @click="showBat = !showBat" x-text="showBat ? 'hide bat' : 'bat'"></button>
   <button class="reglaze" @click="$refs.glaze.src += ''">reglaze</button>
@@ -89,7 +89,7 @@
       <span>bat</span>
       <button @click="showBat = false">close</button>
     </div>
-    <iframe x-show="showBat" :src="showBat ? '{{.BatURL}}' : ''"></iframe>
+    <iframe x-show="showBat" :src="showBat ? batURL : ''"></iframe>
   </div>
 </body>
 </html>
