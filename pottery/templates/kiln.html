@@ -39,18 +39,57 @@
     }
     button:hover { border-color: var(--muted); }
     .reglaze { position: fixed; top: 0.6rem; right: 0.6rem; }
+    .bat-toggle { position: fixed; top: 0.6rem; right: 5.5rem; }
     .toggle-clay { position: fixed; top: 0.6rem; left: 0.6rem; }
     .clay { scrollbar-width: none; }
     .clay::-webkit-scrollbar { display: none; }
+    .bat-window {
+      position: fixed;
+      top: 3.2rem;
+      right: 0.6rem;
+      width: min(32rem, calc(100vw - 1.2rem));
+      height: min(28rem, calc(100vh - 4rem));
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 0.75rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      z-index: 10;
+    }
+    .bat-window-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.4rem 0.6rem;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+    .bat-window-header button {
+      padding: 0.15rem 0.5rem;
+      box-shadow: none;
+    }
+    .bat-window iframe { flex: 1; border: none; }
+    [x-cloak] { display: none !important; }
   </style>
   <script src="/static/alpine.min.js" defer></script>
 </head>
-<body x-data="{ showClay: true }">
+<body x-data="{ showClay: true, showBat: false }">
   <button class="toggle-clay" @click="showClay = !showClay" x-text="showClay ? 'cover clay' : 'uncover clay'"></button>
+  <button class="bat-toggle" @click="showBat = !showBat" x-text="showBat ? 'hide bat' : 'bat'"></button>
   <button class="reglaze" @click="$refs.glaze.src += ''">reglaze</button>
   <div class="panes">
     <iframe class="clay" x-show="showClay" src="{{.ClayURL}}"></iframe>
     <iframe x-ref="glaze" src="{{.GlazeURL}}"></iframe>
+  </div>
+  <div class="bat-window" x-show="showBat" x-cloak>
+    <div class="bat-window-header">
+      <span>bat</span>
+      <button @click="showBat = false">close</button>
+    </div>
+    <iframe x-show="showBat" :src="showBat ? '{{.BatURL}}' : ''"></iframe>
   </div>
 </body>
 </html>

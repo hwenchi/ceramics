@@ -31,6 +31,7 @@ func TestParseHost(t *testing.T) {
 	}{
 		{"ceramic-01-clay.software-dev.ncsa.illinois.edu", "ceramic-01", shellPort, true},
 		{"ceramic-01-glaze.software-dev.ncsa.illinois.edu", "ceramic-01", appPort, true},
+		{"ceramic-01-bat.software-dev.ncsa.illinois.edu", "ceramic-01", batPort, true},
 		{"ceramic-01-clay.software-dev.ncsa.illinois.edu:443", "ceramic-01", shellPort, true},
 		{"ceramic-01-glaze:8000", "ceramic-01", appPort, true},
 		{"ceramic-01.software-dev.ncsa.illinois.edu", "", "", false},

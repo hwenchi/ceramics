@@ -67,7 +67,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: HostRegexp(`^(ceramics|[a-z]+-[a-z]+-(clay|glaze))\.software-dev\.ncsa\.illinois\.edu$`)
+    - match: HostRegexp(`^(ceramics|[a-z]+-[a-z]+-(clay|glaze|bat))\.software-dev\.ncsa\.illinois\.edu$`)
       kind: Rule
       services:
         - name: pottery

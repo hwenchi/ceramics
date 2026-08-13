@@ -47,20 +47,22 @@ func allowFraming(potteryOrigin string) func(*http.Response) error {
 const (
 	claySuffix  = "-clay"
 	glazeSuffix = "-glaze"
+	batSuffix   = "-bat"
 	shellPort   = "7681"
 	appPort     = "8080"
+	batPort     = "8082"
 )
 
-// ceramicHostnames builds a ceramic's two surface hostnames from its name
-// and the cluster's domain (e.g. "software-dev.ncsa.illinois.edu").
-func ceramicHostnames(name, domain string) (clay, glaze string) {
-	return name + claySuffix + "." + domain, name + glazeSuffix + "." + domain
+// ceramicHostnames builds a ceramic's surface hostnames from its name and
+// the cluster's domain (e.g. "software-dev.ncsa.illinois.edu").
+func ceramicHostnames(name, domain string) (clay, glaze, bat string) {
+	return name + claySuffix + "." + domain, name + glazeSuffix + "." + domain, name + batSuffix + "." + domain
 }
 
 // parseHost splits a Host header like "cracked-vase-clay.software-dev...:443"
 // into the ceramic name ("cracked-vase") and the backend port for the
-// surface named by the suffix ("-clay" or "-glaze"). ok is false if the
-// host doesn't name a recognized surface.
+// surface named by the suffix ("-clay", "-glaze", or "-bat"). ok is false
+// if the host doesn't name a recognized surface.
 func parseHost(host string) (name string, port string, ok bool) {
 	label := host
 	if i := strings.IndexAny(label, ".:"); i != -1 {
@@ -71,6 +73,8 @@ func parseHost(host string) (name string, port string, ok bool) {
 		return strings.TrimSuffix(label, claySuffix), shellPort, true
 	case strings.HasSuffix(label, glazeSuffix):
 		return strings.TrimSuffix(label, glazeSuffix), appPort, true
+	case strings.HasSuffix(label, batSuffix):
+		return strings.TrimSuffix(label, batSuffix), batPort, true
 	default:
 		return "", "", false
 	}

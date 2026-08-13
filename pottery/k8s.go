@@ -99,6 +99,7 @@ func buildPodSpec(name, namespace, image string) *corev1.Pod {
 					Ports: []corev1.ContainerPort{
 						{Name: "shell", ContainerPort: 7681},
 						{Name: "app", ContainerPort: 8080},
+						{Name: "bat", ContainerPort: 8082},
 					},
 					SecurityContext: &corev1.SecurityContext{
 						AllowPrivilegeEscalation: &falseVal,
@@ -149,9 +150,9 @@ func (s *server) createCeramic(ctx context.Context) (*corev1.Pod, error) {
 		return nil, err
 	}
 
-	clay, glaze := ceramicHostnames(name, s.domain)
+	clay, glaze, bat := ceramicHostnames(name, s.domain)
 	err = s.setIngressRouteDomains(ctx, func(domains []interface{}) []interface{} {
-		return domainListWith(domainListWith(domains, clay), glaze)
+		return domainListWith(domainListWith(domainListWith(domains, clay), glaze), bat)
 	})
 	if err != nil {
 		// Non-fatal: the ceramic still works, just without a real cert
@@ -170,9 +171,9 @@ func (s *server) deleteCeramic(ctx context.Context, name string) error {
 		return err // a real failure; NotFound just means it's already gone, which is fine
 	}
 
-	clay, glaze := ceramicHostnames(name, s.domain)
+	clay, glaze, bat := ceramicHostnames(name, s.domain)
 	ingressErr := s.setIngressRouteDomains(ctx, func(domains []interface{}) []interface{} {
-		return domainListWithout(domainListWithout(domains, clay), glaze)
+		return domainListWithout(domainListWithout(domainListWithout(domains, clay), glaze), bat)
 	})
 	if ingressErr != nil {
 		log.Printf("warning: could not remove domains for %s: %v", name, ingressErr)

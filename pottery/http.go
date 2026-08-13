@@ -17,10 +17,11 @@ type Ceramic struct {
 	KilnURL   string `json:"kilnURL"`
 	ClayURL   string `json:"clayURL"`
 	GlazeURL  string `json:"glazeURL"`
+	BatURL    string `json:"batURL"`
 }
 
 func (s *server) toCeramic(p corev1.Pod) Ceramic {
-	clay, glaze := ceramicHostnames(p.Name, s.domain)
+	clay, glaze, bat := ceramicHostnames(p.Name, s.domain)
 	return Ceramic{
 		Name:      p.Name,
 		Phase:     string(p.Status.Phase),
@@ -28,6 +29,7 @@ func (s *server) toCeramic(p corev1.Pod) Ceramic {
 		KilnURL:   "/kiln/" + p.Name,
 		ClayURL:   "https://" + clay,
 		GlazeURL:  "https://" + glaze,
+		BatURL:    "https://" + bat,
 	}
 }
 
