@@ -50,9 +50,9 @@ And there came a voice against them, saying:
 
 ---
 
-> **Woe unto you, Pharisees of computing, hypocrites!**
+> Woe unto you, Pharisees of computing, hypocrites!
 >
-> **你们这计算界的法利赛人,假冒为善的人,有祸了!**
+> 你们这计算界的法利赛人,假冒为善的人,有祸了!
 >
 > Ye shut up computing against men: ye enter not yourselves, neither suffer ye them that would enter.
 >
