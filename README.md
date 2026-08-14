@@ -8,9 +8,9 @@ For the computer was once far from men, and few had access unto it.
 
 因為電腦起初離人甚遠，得著它的人也稀少。
 
-And afterward the machine was brought into the homes of men, yet its heart remained hidden.
+And afterward the machine was brought into the houses of men, yet its heart was hid.
 
-後來，這機器被帶進了人的家中，它的心卻仍舊隱藏。
+後來，這機器被帶進人的家中，它的心卻仍舊隱藏。
 
 And there arose the Pharisees of computing.
 
@@ -22,7 +22,7 @@ And they showed men the face of the machine, and taught them what it could do, a
 
 And they made boundaries where there were none, and called them the bounds of the machine.
 
-他們在本來沒有界限之處立了界限，稱之為機器的邊界。
+他們在本來沒有界限之處立了界限，稱這界限為機器的邊界。
 
 And they multiplied rituals and ceremonies, and made themselves the keepers of the way.
 
@@ -68,7 +68,7 @@ And there came a voice against them, saying:
 >
 > Ye make boundaries where there are none, and call them the bounds of the machine.
 >
-> 你們在本來沒有界限之處立了界限，稱之為機器的邊界。
+> 你們在本來沒有界限之處立了界限，稱這界限為機器的邊界。
 >
 > Ye have taken that which was soft as clay, and made it hard as stone.
 >
