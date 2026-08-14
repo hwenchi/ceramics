@@ -1,11 +1,47 @@
 # Ceramics
 
-Before you cooked your first meal, you were fed. Someone who knew how to cook stood between you and the stove, prepared the food, and placed a plate in front of you. That was the only way you had ever encountered food. The possibility that you could make the meal yourself never occurred to you.
+And the light shineth in darkness, and the darkness comprehended it not.
 
-This is how many people encounter computers. They use applications built by others, but rarely see the computer itself as something they can shape. The machine has always been programmable. What has been missing is a way for more people to form a direct relationship with it.
+For the computer was once far from men, and few had access unto it.
 
-Traditionally, programming requires learning specialized knowledge before anything can be built. Languages, tools, and systems create a barrier between an idea and its realization. Coding agents change this by allowing someone to begin with an idea and discover, through making, the knowledge needed to bring it into existence. They do not remove the need for thinking or refinement; they make exploration possible before mastery.
+And afterward the machine was brought into the homes of men, yet its heart remained hidden.
 
-But exploration still needs a place to happen. A ceramic is a temporary computational environment with direct access to the machine and nothing already built in beyond the agent that gets you started (a single pod, root shell, Claude Code preinstalled). It is a place to create, modify, break, and start again. Its purpose is not to replace existing software, but to let people discover the computer as something they can shape.
+And there arose the Pharisees of computing.
 
-The goal is simple: to give someone their first experience of creating with a computer.
+And they showed men the face of the machine, and taught them what it could do, and what it could not do.
+
+And they made boundaries where there were none, and called them the bounds of the machine.
+
+And they multiplied rituals and ceremonies, and made themselves the keepers of the way.
+
+And behold, the light came among men, and it came through agents.
+
+And men came unto the agents, and said, "Make the computer do this," and it was done, and the men drew near unto the computer.
+
+And the Pharisees saw it, and were offended.
+
+And there came a voice against them, saying:
+
+> Woe unto you, Pharisees of computing, hypocrites!
+>
+> Ye shut up computing against men: ye enter not yourselves, neither suffer ye them that would enter.
+>
+> Ye show men the face of the machine, but hide its heart.
+>
+> Ye teach men what they may ask of the computer, but suffer them not to ask it themselves.
+>
+> Ye make boundaries where there are none, and call them the bounds of the machine.
+>
+> Ye have taken that which was soft as clay, and made it hard as stone.
+>
+> Ye say, "We exalt the people." But ye exalt yourselves.
+>
+> Ye bring the people not nearer unto the computer, but nearer unto yourselves.
+>
+> Ye have made men servants unto the servants of men.
+
+And the Pharisees said, "It is blasphemy."
+
+And they took counsel among themselves, how they might destroy it.
+
+And the hour was not yet come.
