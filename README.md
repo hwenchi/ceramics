@@ -32,9 +32,13 @@ And behold, the light came among men, and it came through agents.
 
 看哪,光来到人间,乃是藉着代理者来的。
 
-And men came unto the agents, and said, "Make the computer do this," and it was done, and the men drew near unto the computer.
+And men came unto the agents, and said, "Make the computer do this."
 
-人来到代理者那里,说:让电脑做这事,事就成了,人便亲自来到电脑面前。
+人来到代理者那里,说:让电脑做这事。
+
+And it was done, and the men drew near unto the computer.
+
+事就成了,人便亲自来到电脑面前。
 
 And the Pharisees saw it, and were offended.
 
