@@ -92,17 +92,12 @@
 
     .name { flex: 1; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
 
-    .glaze-link {
-      font-size: 0.75rem;
-      font-weight: 600;
+    .name-link {
+      color: var(--text);
       text-decoration: none;
-      color: #fff;
-      padding: 0.15rem 0.6rem;
-      border-radius: 999px;
-      background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-      box-shadow: 0 1px 4px rgba(181, 96, 63, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      border-bottom: 1px solid transparent;
     }
-    .glaze-link:hover { filter: brightness(1.1); }
+    .name-link:hover { border-bottom-color: var(--muted); }
 
     .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     .actions button { font-size: 0.85rem; padding: 0.35rem 0.7rem; }
@@ -134,12 +129,9 @@
         <div class="row">
           <span class="dot" :style="{ background: dotColor(c.phase) }" :title="phaseLabel(c.phase)"></span>
           <span class="name">
-            <span x-text="c.name"></span>
-            <a class="glaze-link" :href="c.glazeURL" target="_blank">glaze</a>
+            <a class="name-link" :href="c.kilnURL" x-text="c.name"></a>
           </span>
           <div class="actions">
-            <button @click="window.open(c.kilnURL, '_blank')">kiln</button>
-            <button @click="window.open(c.batURL, '_blank')">bat</button>
             <button class="delete" @click="smash(c.name)">delete</button>
           </div>
         </div>

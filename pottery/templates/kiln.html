@@ -113,6 +113,7 @@
   <div class="navbar">
     <button class="left-toggle" @click="showLeft = !showLeft" x-text="showLeft ? 'hide panel' : 'show panel'"></button>
     <button class="refresh" @click="$refs.glaze.src += ''">refresh</button>
+    <button class="share" @click="window.open('{{.GlazeURL}}', '_blank')">share</button>
   </div>
   <div class="content">
     <div class="left" :class="{ collapsed: !showLeft }">
