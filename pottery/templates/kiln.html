@@ -59,6 +59,9 @@
       height: 100%;
       display: flex;
       flex-direction: column;
+      gap: 0.6rem;
+      padding: 0.6rem;
+      background: var(--border);
     }
     /* Fixed, not viewport-relative: every viewer's ttyd terminal must
        report the same size, or the shared tmux session reflows for
@@ -66,12 +69,22 @@
     .clay-pane {
       flex: 0 0 auto;
       height: 600px;
-      border-bottom: 1px solid var(--border);
+      border-radius: 0.6rem;
+      overflow: hidden;
+      background: var(--surface);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
     }
     /* min-height keeps the file browser usable instead of getting
        squeezed to nothing under the fixed-height terminal above it; body
        grows past 100vh (page scrolls) rather than shrinking this. */
-    .bat-pane { flex: 1; min-height: 200px; }
+    .bat-pane {
+      flex: 1;
+      min-height: 200px;
+      border-radius: 0.6rem;
+      overflow: hidden;
+      background: var(--surface);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+    }
     .glaze-pane { flex: 1; min-width: 0; }
     .clay-pane iframe, .bat-pane iframe, .glaze-pane iframe {
       width: 100%;
