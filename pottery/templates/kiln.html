@@ -37,12 +37,28 @@
       background: var(--surface);
     }
     .content { flex: 1; display: flex; }
+    /* .left clips via overflow, animating width to reclaim space for
+       .glaze-pane. .left-inner stays a fixed 640px regardless, so the
+       clay/bat iframes never see their own box resize when toggled —
+       ttyd shares one tmux session across every viewer, and a resize
+       reflows it for everyone, not just whoever toggled the panel. */
     .left {
       flex: 0 0 auto;
       width: 640px;
+      overflow: hidden;
+      transition: width 0.2s ease;
+      border-right: 1px solid var(--border);
+    }
+    .left.collapsed {
+      width: 0;
+      border-right: none;
+    }
+    .left-inner {
+      width: 640px;
+      flex-shrink: 0;
+      height: 100%;
       display: flex;
       flex-direction: column;
-      border-right: 1px solid var(--border);
     }
     /* Fixed, not viewport-relative: every viewer's ttyd terminal must
        report the same size, or the shared tmux session reflows for
@@ -86,9 +102,11 @@
     <button class="refresh" @click="$refs.glaze.src += ''">refresh</button>
   </div>
   <div class="content">
-    <div class="left" x-show="showLeft">
-      <div class="clay-pane"><iframe src="{{.ClayURL}}"></iframe></div>
-      <div class="bat-pane"><iframe src="{{.BatURL}}"></iframe></div>
+    <div class="left" :class="{ collapsed: !showLeft }">
+      <div class="left-inner">
+        <div class="clay-pane"><iframe src="{{.ClayURL}}"></iframe></div>
+        <div class="bat-pane"><iframe src="{{.BatURL}}"></iframe></div>
+      </div>
     </div>
     <div class="glaze-pane"><iframe x-ref="glaze" src="{{.GlazeURL}}"></iframe></div>
   </div>
