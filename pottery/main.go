@@ -48,6 +48,7 @@ func main() {
 		image:         image,
 		domain:        domain,
 	}
+	s.resolver = newCachingResolver(s.resolveIP)
 
 	potteryOrigin := os.Getenv("POTTERY_ORIGIN")
 	if potteryOrigin == "" {
@@ -62,7 +63,7 @@ func main() {
 	apiMux.HandleFunc("DELETE /api/ceramics/{name}", s.handleDelete)
 	apiMux.Handle("GET /kiln/{name}", &kilnHandler{domain: domain})
 
-	proxy := &ceramicProxy{resolve: s.resolveIP, potteryOrigin: potteryOrigin}
+	proxy := &ceramicProxy{resolver: s.resolver, potteryOrigin: potteryOrigin}
 
 	// Requests to a ceramic's own hostname (cracked-vase-clay, cracked-vase-glaze)
 	// go to the proxy; everything else (the pottery's own hostname) hits the API.
@@ -74,7 +75,11 @@ func main() {
 		apiMux.ServeHTTP(w, r)
 	})
 
-	addr := ":8000"
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8000"
+	}
+	addr := ":" + port
 	log.Printf("pottery listening on %s (namespace=%s image=%s)", addr, namespace, image)
 	log.Fatal(http.ListenAndServe(addr, root))
 }

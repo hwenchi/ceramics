@@ -1,25 +1,40 @@
 package main
 
 import (
-	"context"
 	"net/http"
 	"net/http/httputil"
 	"strings"
 )
 
-// resolver looks up the backend IP for a ceramic name. In production this
-// is s.resolveIP; tests can supply one that points at a local test server.
-type resolver func(ctx context.Context, name string) (string, error)
-
 // ceramicProxy reverse-proxies requests to the right ceramic pod, chosen
 // by the Host header, on the port chosen by which surface it names.
 type ceramicProxy struct {
-	resolve resolver
+	resolver *cachingResolver
 	// potteryOrigin is the pottery's own origin (e.g.
 	// "https://ceramics.software-dev.ncsa.illinois.edu"), used to let the
 	// glaze surface be iframed by the pottery despite whatever
 	// frame-blocking headers the agent's app might send.
 	potteryOrigin string
+}
+
+// evictingTransport wraps a transport and evicts a ceramic's cached IP
+// whenever a round trip to it fails outright (connection refused, timeout,
+// ...) — as opposed to the backend returning an HTTP error, which is a
+// normal response, not a dead IP. This is the only point in the request
+// lifecycle where a stale cache entry is observable: the real TCP dial
+// happens here.
+type evictingTransport struct {
+	http.RoundTripper
+	name  string
+	evict func(name string)
+}
+
+func (t *evictingTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	resp, err := t.RoundTripper.RoundTrip(req)
+	if err != nil {
+		t.evict(t.name)
+	}
+	return resp, err
 }
 
 // notYetGlazed serves a friendly placeholder instead of a raw connection
@@ -87,7 +102,7 @@ func (p *ceramicProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ip, err := p.resolve(r.Context(), name)
+	ip, err := p.resolver.resolveIP(r.Context(), name)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadGateway)
 		return
@@ -98,6 +113,7 @@ func (p *ceramicProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			req.URL.Scheme = "http"
 			req.URL.Host = ip + ":" + port
 		},
+		Transport: &evictingTransport{RoundTripper: http.DefaultTransport, name: name, evict: p.resolver.evict},
 	}
 	if port == appPort {
 		proxy.ModifyResponse = allowFraming(p.potteryOrigin)

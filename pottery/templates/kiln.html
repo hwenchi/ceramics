@@ -21,11 +21,48 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      height: 100vh;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
-    .panes { height: 100%; display: flex; }
-    .panes iframe { flex: 1; border: none; }
+    .navbar {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.5rem;
+      padding: 0.5rem 0.6rem;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .content { flex: 1; display: flex; }
+    .left {
+      flex: 0 0 auto;
+      width: 640px;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid var(--border);
+    }
+    /* Fixed, not viewport-relative: every viewer's ttyd terminal must
+       report the same size, or the shared tmux session reflows for
+       everyone whenever a differently-sized viewer connects. */
+    .clay-pane {
+      flex: 0 0 auto;
+      height: 600px;
+      border-bottom: 1px solid var(--border);
+    }
+    /* min-height keeps the file browser usable instead of getting
+       squeezed to nothing under the fixed-height terminal above it; body
+       grows past 100vh (page scrolls) rather than shrinking this. */
+    .bat-pane { flex: 1; min-height: 200px; }
+    .glaze-pane { flex: 1; min-width: 0; }
+    .clay-pane iframe, .bat-pane iframe, .glaze-pane iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
     button {
       font: inherit;
       font-size: 0.85rem;
@@ -36,60 +73,24 @@
       border-radius: 0.5rem;
       cursor: pointer;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      width: 110px;
+      text-align: center;
     }
     button:hover { border-color: var(--muted); }
-    .reglaze { position: fixed; top: 0.6rem; right: 0.6rem; }
-    .bat-toggle { position: fixed; top: 0.6rem; right: 5.5rem; }
-    .toggle-clay { position: fixed; top: 0.6rem; left: 0.6rem; }
-    .clay { scrollbar-width: none; }
-    .clay::-webkit-scrollbar { display: none; }
-    .bat-window {
-      position: fixed;
-      top: 3.2rem;
-      right: 0.6rem;
-      width: min(56rem, calc(100vw - 1.2rem));
-      height: min(36rem, calc(100vh - 4rem));
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 0.75rem;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      z-index: 10;
-    }
-    .bat-window-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.4rem 0.6rem;
-      border-bottom: 1px solid var(--border);
-      font-size: 0.85rem;
-      color: var(--text);
-    }
-    .bat-window-header button {
-      padding: 0.15rem 0.5rem;
-      box-shadow: none;
-    }
-    .bat-window iframe { flex: 1; border: none; }
-    [x-cloak] { display: none !important; }
   </style>
   <script src="/static/alpine.min.js" defer></script>
 </head>
-<body x-data="{ showClay: true, showBat: false, batURL: '{{.BatURL}}' }">
-  <button class="toggle-clay" @click="showClay = !showClay" x-text="showClay ? 'cover clay' : 'uncover clay'"></button>
-  <button class="bat-toggle" @click="showBat = !showBat" x-text="showBat ? 'hide bat' : 'bat'"></button>
-  <button class="reglaze" @click="$refs.glaze.src += ''">reglaze</button>
-  <div class="panes">
-    <iframe class="clay" x-show="showClay" src="{{.ClayURL}}"></iframe>
-    <iframe x-ref="glaze" src="{{.GlazeURL}}"></iframe>
+<body x-data="{ showLeft: true }">
+  <div class="navbar">
+    <button class="left-toggle" @click="showLeft = !showLeft" x-text="showLeft ? 'hide panel' : 'show panel'"></button>
+    <button class="refresh" @click="$refs.glaze.src += ''">refresh</button>
   </div>
-  <div class="bat-window" x-show="showBat" x-cloak>
-    <div class="bat-window-header">
-      <span>bat</span>
-      <button @click="showBat = false">close</button>
+  <div class="content">
+    <div class="left" x-show="showLeft">
+      <div class="clay-pane"><iframe src="{{.ClayURL}}"></iframe></div>
+      <div class="bat-pane"><iframe src="{{.BatURL}}"></iframe></div>
     </div>
-    <iframe x-show="showBat" :src="showBat ? batURL : ''"></iframe>
+    <div class="glaze-pane"><iframe x-ref="glaze" src="{{.GlazeURL}}"></iframe></div>
   </div>
 </body>
 </html>

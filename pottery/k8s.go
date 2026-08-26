@@ -29,6 +29,8 @@ type server struct {
 	namespace     string
 	image         string
 	domain        string // e.g. "software-dev.ncsa.illinois.edu"
+
+	resolver *cachingResolver
 }
 
 // getConfig loads the cluster config: via KUBECONFIG when set (local dev),
@@ -169,6 +171,9 @@ func (s *server) deleteCeramic(ctx context.Context, name string) error {
 	err := s.clientset.CoreV1().Pods(s.namespace).Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil && !apierrors.IsNotFound(err) {
 		return err // a real failure; NotFound just means it's already gone, which is fine
+	}
+	if s.resolver != nil {
+		s.resolver.evict(name)
 	}
 
 	clay, glaze, bat := ceramicHostnames(name, s.domain)

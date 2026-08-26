@@ -1,7 +1,9 @@
 package main
 
 import (
+	"errors"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
@@ -45,3 +47,52 @@ func TestParseHost(t *testing.T) {
 		}
 	}
 }
+
+// failingRoundTripper always fails, standing in for a dial to a dead IP.
+type failingRoundTripper struct{}
+
+func (failingRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	return nil, errors.New("connection refused")
+}
+
+func TestEvictingTransportEvictsOnFailure(t *testing.T) {
+	var evicted string
+	transport := &evictingTransport{
+		RoundTripper: failingRoundTripper{},
+		name:         "cracked-vase",
+		evict:        func(name string) { evicted = name },
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "http://10.0.0.1:8080/", nil)
+	if _, err := transport.RoundTrip(req); err == nil {
+		t.Fatal("RoundTrip: want error from failingRoundTripper, got nil")
+	}
+	if evicted != "cracked-vase" {
+		t.Errorf("evict called with %q, want %q", evicted, "cracked-vase")
+	}
+}
+
+func TestEvictingTransportDoesNotEvictOnSuccess(t *testing.T) {
+	backend := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer backend.Close()
+
+	evictCalled := false
+	transport := &evictingTransport{
+		RoundTripper: http.DefaultTransport,
+		name:         "cracked-vase",
+		evict:        func(name string) { evictCalled = true },
+	}
+
+	req := httptest.NewRequest(http.MethodGet, backend.URL, nil)
+	resp, err := transport.RoundTrip(req)
+	if err != nil {
+		t.Fatalf("RoundTrip: %v", err)
+	}
+	resp.Body.Close()
+	if evictCalled {
+		t.Error("evict called on a successful round trip")
+	}
+}
+
