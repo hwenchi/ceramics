@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"sort"
 
+	"github.com/moby/moby/api/pkg/stdcopy"
 	"github.com/moby/moby/client"
 )
 
@@ -22,6 +23,12 @@ type statusEntry struct {
 var restartAllowed = map[string]bool{
 	"fastapi-dev": true,
 	"angular-dev": true,
+}
+
+// Exec: fastapi-dev only. angular-dev is static-file output with nothing
+// to interactively debug the way backend code/DB access needs.
+var execAllowed = map[string]bool{
+	"fastapi-dev": true,
 }
 
 // Logs/status are read-only, so all fixed containers are fine here.
@@ -70,8 +77,41 @@ func main() {
 			return
 		}
 		defer out.Close()
-		if _, err := io.Copy(w, out); err != nil {
+		// Non-TTY containers multiplex stdout/stderr with 8-byte frame
+		// headers; StdCopy demuxes into plain bytes.
+		if _, err := stdcopy.StdCopy(w, w, out); err != nil {
 			log.Printf("logs %s: %v", name, err)
+		}
+	})
+
+	mux.HandleFunc("POST /exec/{name}", func(w http.ResponseWriter, r *http.Request) {
+		name := r.PathValue("name")
+		if !execAllowed[name] {
+			http.Error(w, "not allowed", http.StatusForbidden)
+			return
+		}
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		created, err := cli.ExecCreate(r.Context(), name, client.ExecCreateOptions{
+			Cmd:          []string{"sh", "-c", string(body)},
+			AttachStdout: true,
+			AttachStderr: true,
+		})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		attached, err := cli.ExecAttach(r.Context(), created.ID, client.ExecAttachOptions{})
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer attached.Close()
+		if _, err := stdcopy.StdCopy(w, w, attached.Reader); err != nil {
+			log.Printf("exec %s: %v", name, err)
 		}
 	})
 

@@ -1,24 +1,24 @@
-{$DOMAIN} {
+{$SCHEME}://{$DOMAIN} {
 	reverse_proxy angular-dev:4200
 }
 
-api.{$DOMAIN} {
+{$SCHEME}://api.{$DOMAIN} {
 	reverse_proxy fastapi-dev:8000
 }
 
-kiln.{$DOMAIN} {
+{$SCHEME}://kiln.{$DOMAIN} {
 	root * /srv/site
 	file_server
 }
 
-clay.{$DOMAIN} {
+{$SCHEME}://clay.{$DOMAIN} {
 	reverse_proxy ceramic:7681
 }
 
-bat.{$DOMAIN} {
+{$SCHEME}://bat.{$DOMAIN} {
 	reverse_proxy ceramic:8082
 }
 
-{$AUTH_HOST} {
+{$SCHEME}://{$AUTH_HOST} {
 	reverse_proxy keycloak:8080
 }

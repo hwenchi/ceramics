@@ -15,6 +15,7 @@ services:
       - ./tools/restart-service:/usr/local/bin/restart-service:ro
       - ./tools/service-logs:/usr/local/bin/service-logs:ro
       - ./tools/service-status:/usr/local/bin/service-status:ro
+      - ./tools/exec-in:/usr/local/bin/exec-in:ro
     # 7681=clay (shell), 8082=bat (file browser). 8080 ("glaze" in the k8s
     # deployment) is unused here — the live app preview is angular-dev,
     # not something started ad hoc inside this container.
@@ -37,11 +38,14 @@ services:
     environment:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres/app
-      KC_DB_SCHEMA: keycloak # isolated within the shared "app" database; Keycloak creates/migrates this schema itself
       KC_DB_USERNAME: postgres
       KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      # Keycloak always sits behind Caddy, which terminates TLS — it only
+      # ever needs to speak plain HTTP internally, regardless of SCHEME.
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
     volumes:
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
     depends_on:
@@ -56,7 +60,7 @@ services:
       - ${WORKSPACE_DIR}:/workspace
     command: sh -c "uv sync && uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
     environment:
-      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres/app
+      DATABASE_URL: postgresql+psycopg://postgres:${POSTGRES_PASSWORD}@postgres/app
       OIDC_ISSUER: ${SCHEME}://${AUTH_HOST}/realms/app
     depends_on:
       - postgres
@@ -68,7 +72,7 @@ services:
     working_dir: /workspace/frontend
     volumes:
       - ${WORKSPACE_DIR}:/workspace
-    command: sh -c "npm install && npx ng serve --host 0.0.0.0 --port 4200 --disable-host-check"
+    command: sh -c "npm install && npx ng serve --host 0.0.0.0 --port 4200 --allowed-hosts"
 
   caddy:
     image: caddy:2
@@ -84,6 +88,7 @@ services:
       - caddy_config:/config
     environment:
       DOMAIN: ${DOMAIN}
+      SCHEME: ${SCHEME}
       AUTH_HOST: ${AUTH_HOST}
     depends_on:
       - ceramic

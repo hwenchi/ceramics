@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+if [ $# -ne 2 ]; then
+	echo "usage: exec-in <name> '<shell command>'" >&2
+	exit 1
+fi
+curl -sf -X POST --data-binary "$2" "http://ctl:8090/exec/$1"
