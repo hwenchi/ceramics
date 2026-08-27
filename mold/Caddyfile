@@ -1,0 +1,24 @@
+{$DOMAIN} {
+	reverse_proxy angular-dev:4200
+}
+
+api.{$DOMAIN} {
+	reverse_proxy fastapi-dev:8000
+}
+
+kiln.{$DOMAIN} {
+	root * /srv/site
+	file_server
+}
+
+clay.{$DOMAIN} {
+	reverse_proxy ceramic:7681
+}
+
+bat.{$DOMAIN} {
+	reverse_proxy ceramic:8082
+}
+
+{$AUTH_HOST} {
+	reverse_proxy keycloak:8080
+}

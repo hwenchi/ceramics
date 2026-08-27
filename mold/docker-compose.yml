@@ -1,0 +1,96 @@
+services:
+  ctl:
+    image: ghcr.io/hwenchi/ceramics/ctl:main
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  ceramic:
+    image: ghcr.io/hwenchi/ceramics/ceramic:main
+    container_name: ceramic
+    restart: unless-stopped
+    volumes:
+      - ${WORKSPACE_DIR}:/workspace
+      - ./claude.md:/root/.claude/CLAUDE.md:ro
+      - ./tools/restart-service:/usr/local/bin/restart-service:ro
+      - ./tools/service-logs:/usr/local/bin/service-logs:ro
+      - ./tools/service-status:/usr/local/bin/service-status:ro
+    # 7681=clay (shell), 8082=bat (file browser). 8080 ("glaze" in the k8s
+    # deployment) is unused here — the live app preview is angular-dev,
+    # not something started ad hoc inside this container.
+
+  postgres:
+    image: postgres:16
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: app
+    volumes:
+      - ${DATA_DIR}/postgres:/var/lib/postgresql/data
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    container_name: keycloak
+    restart: unless-stopped
+    command: start --import-realm --hostname=${SCHEME}://${AUTH_HOST}
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres/app
+      KC_DB_SCHEMA: keycloak # isolated within the shared "app" database; Keycloak creates/migrates this schema itself
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: ${POSTGRES_PASSWORD}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    volumes:
+      - ./keycloak/realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
+    depends_on:
+      - postgres
+
+  fastapi-dev:
+    image: ghcr.io/astral-sh/uv:python3.13-bookworm-slim
+    container_name: fastapi-dev
+    restart: unless-stopped
+    working_dir: /workspace/backend
+    volumes:
+      - ${WORKSPACE_DIR}:/workspace
+    command: sh -c "uv sync && uv run uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
+    environment:
+      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres/app
+      OIDC_ISSUER: ${SCHEME}://${AUTH_HOST}/realms/app
+    depends_on:
+      - postgres
+
+  angular-dev:
+    image: node:22-slim
+    container_name: angular-dev
+    restart: unless-stopped
+    working_dir: /workspace/frontend
+    volumes:
+      - ${WORKSPACE_DIR}:/workspace
+    command: sh -c "npm install && npx ng serve --host 0.0.0.0 --port 4200 --disable-host-check"
+
+  caddy:
+    image: caddy:2
+    container_name: caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./site:/srv/site:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      DOMAIN: ${DOMAIN}
+      AUTH_HOST: ${AUTH_HOST}
+    depends_on:
+      - ceramic
+      - keycloak
+      - fastapi-dev
+      - angular-dev
+
+volumes:
+  caddy_data:
+  caddy_config:

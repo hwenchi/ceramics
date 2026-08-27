@@ -1,0 +1,7 @@
+#!/bin/sh
+set -eu
+if [ $# -ne 1 ]; then
+	echo "usage: restart-service <name>" >&2
+	exit 1
+fi
+curl -sf -X POST "http://ctl:8090/restart/$1"

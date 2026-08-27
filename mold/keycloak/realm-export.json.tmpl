@@ -1,0 +1,25 @@
+{
+  "realm": "app",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "clients": [
+    {
+      "clientId": "web",
+      "enabled": true,
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "redirectUris": ["${SCHEME}://${DOMAIN}/*"],
+      "webOrigins": ["${SCHEME}://${DOMAIN}"]
+    },
+    {
+      "clientId": "api",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": true,
+      "protocol": "openid-connect"
+    }
+  ]
+}
