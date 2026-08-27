@@ -15,13 +15,23 @@ RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-RUN curl -fsSL -o /usr/local/bin/ttyd \
-        https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.x86_64 \
+RUN case "$(dpkg --print-architecture)" in \
+        amd64) ARCH=x86_64 ;; \
+        arm64) ARCH=aarch64 ;; \
+        *) echo "unsupported architecture" >&2; exit 1 ;; \
+    esac \
+    && curl -fsSL -o /usr/local/bin/ttyd \
+        "https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.${ARCH}" \
     && chmod +x /usr/local/bin/ttyd
 
 ENV DUFS_VERSION=v0.46.0
-RUN curl -fsSL -o /tmp/dufs.tar.gz \
-        "https://github.com/sigoden/dufs/releases/download/${DUFS_VERSION}/dufs-${DUFS_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
+RUN case "$(dpkg --print-architecture)" in \
+        amd64) ARCH=x86_64 ;; \
+        arm64) ARCH=aarch64 ;; \
+        *) echo "unsupported architecture" >&2; exit 1 ;; \
+    esac \
+    && curl -fsSL -o /tmp/dufs.tar.gz \
+        "https://github.com/sigoden/dufs/releases/download/${DUFS_VERSION}/dufs-${DUFS_VERSION}-${ARCH}-unknown-linux-musl.tar.gz" \
     && tar -xzf /tmp/dufs.tar.gz -C /usr/local/bin dufs \
     && chmod +x /usr/local/bin/dufs \
     && rm -rf /tmp/dufs*
