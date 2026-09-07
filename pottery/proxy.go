@@ -38,12 +38,31 @@ func (t *evictingTransport) RoundTrip(req *http.Request) (*http.Response, error)
 }
 
 // notYetGlazed serves a friendly placeholder instead of a raw connection
-// error when nothing is listening on the glaze port yet — the normal state
-// for a ceramic before anything's been built.
+// error when the ceramic's console (the fallback below) isn't reachable
+// either — meaning the ceramic itself is unreachable, not just the app.
 func notYetGlazed(w http.ResponseWriter, r *http.Request, err error) {
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusServiceUnavailable)
 	w.Write([]byte("nothing here yet — ask claude to build something"))
+}
+
+// fallbackToConsole serves the ceramic's always-on console (a persistent
+// process, from pod boot, that tails whatever's running and writing to
+// /var/log/console.log) when nothing is listening on the glaze port yet —
+// e.g. while a recipe is still installing — instead of a dead connection.
+func fallbackToConsole(ip, potteryOrigin string, evict func(name string), name string) func(http.ResponseWriter, *http.Request, error) {
+	return func(w http.ResponseWriter, r *http.Request, err error) {
+		consoleProxy := &httputil.ReverseProxy{
+			Director: func(req *http.Request) {
+				req.URL.Scheme = "http"
+				req.URL.Host = ip + ":" + consolePort
+			},
+			Transport:      &evictingTransport{RoundTripper: http.DefaultTransport, name: name, evict: evict},
+			ModifyResponse: allowFraming(potteryOrigin),
+			ErrorHandler:   notYetGlazed,
+		}
+		consoleProxy.ServeHTTP(w, r)
+	}
 }
 
 // allowFraming strips any frame-blocking headers a response sets and
@@ -65,6 +84,7 @@ const (
 	batSuffix   = "-bat"
 	shellPort   = "7681"
 	appPort     = "8080"
+	consolePort = "8081"
 	batPort     = "8082"
 )
 
@@ -117,7 +137,7 @@ func (p *ceramicProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if port == appPort {
 		proxy.ModifyResponse = allowFraming(p.potteryOrigin)
-		proxy.ErrorHandler = notYetGlazed
+		proxy.ErrorHandler = fallbackToConsole(ip, p.potteryOrigin, p.resolver.evict, name)
 	}
 	proxy.ServeHTTP(w, r)
 }

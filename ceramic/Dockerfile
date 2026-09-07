@@ -9,6 +9,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
         git \
         gnupg \
+        python3 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
@@ -40,10 +41,13 @@ RUN npm install -g @anthropic-ai/claude-code
 
 COPY CLAUDE.md /root/.claude/CLAUDE.md
 COPY start.sh /usr/local/bin/start.sh
+COPY console-server.py /opt/console-server.py
+COPY recipes/ /opt/recipes/
+COPY skills/recipes/ /root/.claude/skills/recipes/
 RUN chmod +x /usr/local/bin/start.sh
 
 WORKDIR /workspace
 
-EXPOSE 7681 8080 8082
+EXPOSE 7681 8080 8081 8082
 
 CMD ["start.sh"]
