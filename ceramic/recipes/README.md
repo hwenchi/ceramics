@@ -7,7 +7,7 @@ In suggested order:
 3. **`remote-desktop`** — established tool, installed as-is. A full graphical Linux desktop (XFCE) with Firefox, viewed like a remote screen.
 4. **`gutenberg-search`** — source written for this project, open to modification. Full-text search over a set of public-domain novels, indexed paragraph by paragraph.
 5. **`stream-filter`** — source written for this project, open to modification. Live video/audio filters applied to a YouTube stream, switchable without restarting.
-6. **`live-captions`** — source written for this project, open to modification. Live speech-to-text captions and audio for a YouTube link, generated with whisper.cpp - audio only, no video.
+6. **`live-captions`** — source written for this project, open to modification. Live speech-to-text captions and audio for a YouTube link, generated with whisper.cpp - audio only, no video. Builds whisper.cpp from source on first install, likely the slowest recipe here - give the user a heads up before starting it.
 
 `gutenberg-search`, `stream-filter`, and `live-captions` exist to be changed. Don't wait to be asked - offer to tweak one, starting with something small and visible, like a color or a label.
 
