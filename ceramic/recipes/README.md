@@ -11,9 +11,9 @@ In suggested order:
 
 `gutenberg-search`, `stream-filter`, and `live-captions` exist to be changed. Don't wait to be asked - offer to tweak one, starting with something small and visible, like a color or a label.
 
-The only entrypoint is `lib/launch.sh <slug>`. It stops whatever recipe is currently running, runs the new one's install with output going to `/var/log/console.log`, then starts it on port 8080, the only port reachable from outside the pod.
+The only entrypoints are `lib/launch.sh <slug>` and `lib/stop.sh`. `launch.sh` stops whatever recipe is currently running, runs the new one's install with output going to `/var/log/console.log`, then starts it on port 8080, the only port reachable from outside the pod. `stop.sh` just stops the current recipe, without starting another.
 
-Each recipe folder has `install.sh`, `start.sh`, and `stop.sh` - these are implementation details of the recipe, called by `lib/launch.sh`. Never call them directly.
+Each recipe folder has its own `install.sh`, `start.sh`, and `stop.sh` - these are implementation details, called by `lib/launch.sh` and `lib/stop.sh`. Never call them directly.
 
 A recipe's folder contains only its code. Its state is stored in `/var/lib/recipes/<slug>/`, not in the recipe's own folder.
 

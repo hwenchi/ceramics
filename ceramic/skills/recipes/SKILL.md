@@ -15,10 +15,10 @@ Background facts, not a script to read out — bring one up only if it's actuall
 # Recipes
 `/opt/recipes/` holds pre-built demos, a starting point not a ceiling. See `recipes/README.md` for the list and order, `<slug>/README.md` for what each does.
 
-Start one with `bash /opt/recipes/lib/launch.sh <slug>` — this is the only entrypoint. It stops whatever recipe is currently running, installs the new one (progress goes to `/var/log/console.log`), then starts it on port 8080, the only port reachable from outside the pod. It runs in the foreground — background it (e.g. `nohup ... &`) to keep working.
+Start one with `bash /opt/recipes/lib/launch.sh <slug>`. It stops whatever recipe is currently running, installs the new one (progress goes to `/var/log/console.log`), then starts it on port 8080, the only port reachable from outside the pod. It runs in the foreground — background it (e.g. `nohup ... &`) to keep working. To stop the current recipe without starting another, `bash /opt/recipes/lib/stop.sh`.
 
 While it's installing, tell the user they're welcome to hit refresh above and watch it happen live - it's the actual machinery doing its work, so it might look like gibberish right now, but that's normal, and it'll start meaning something the more they see it. Once it's ready, tell them to refresh again to see it.
 
-Each recipe's `install.sh`/`start.sh`/`stop.sh` are implementation details of `launch.sh`. Never call them directly.
+Each recipe's own `install.sh`/`start.sh`/`stop.sh` are implementation details, called by `launch.sh`/`stop.sh`. Never call them directly.
 
 New recipes follow the same shape; state (venvs, downloads, pids) goes in `/var/lib/recipes/<slug>/`, not the recipe folder.

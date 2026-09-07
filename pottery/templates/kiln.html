@@ -106,11 +106,27 @@
       text-align: center;
     }
     button:hover { border-color: var(--muted); }
+
+    .back {
+      font: inherit;
+      font-size: 0.85rem;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      padding: 0.4rem 0.8rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      width: auto;
+      text-align: center;
+      text-decoration: none;
+    }
+    .back:hover { border-color: var(--muted); }
   </style>
   <script src="/static/alpine.min.js" defer></script>
 </head>
 <body x-data="{ showLeft: true }">
   <div class="navbar">
+    <a class="back" href="/">back to studio</a>
     <button class="left-toggle" @click="showLeft = !showLeft" x-text="showLeft ? 'hide panel' : 'show panel'"></button>
     <button class="refresh" @click="$refs.glaze.src += ''">refresh</button>
     <button class="share" @click="window.open('{{.GlazeURL}}', '_blank')">share</button>

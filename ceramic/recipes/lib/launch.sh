@@ -7,12 +7,7 @@ RECIPES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 CURRENT_FILE="/var/lib/recipes/current"
 
 mkdir -p /var/lib/recipes
-if [[ -f "$CURRENT_FILE" ]]; then
-  prev="$(cat "$CURRENT_FILE")"
-  if [[ -n "$prev" && -x "$RECIPES_DIR/$prev/stop.sh" ]]; then
-    bash "$RECIPES_DIR/$prev/stop.sh"
-  fi
-fi
+bash "$RECIPES_DIR/lib/stop.sh"
 
 CONSOLE_LOG="/var/log/console.log"
 : > "$CONSOLE_LOG"
