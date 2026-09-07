@@ -9,6 +9,20 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 PORT = int(sys.argv[1]) if len(sys.argv) > 1 else 8081
 LOG_FILE = sys.argv[2] if len(sys.argv) > 2 else "/var/log/console.log"
 
+# Not user data - safe to embed real markup, unlike the log content below.
+EMPTY_MESSAGE = """oh hey 👋 enjoying the view?
+
+stunning, isn't it? <b>EMPTY SPACE!</b> 🎉
+looks like you've got <b>NOTHING</b> to do. honestly? good for you. very zen.
+
+you know who else is very zen? claude.
+i think they're asleep.
+
+still here?
+you're really just gonna <b>STARE AT ME?</b> 🙄
+
+just so you know? i'm a 🪵🪵🪵 <b>LOG</b> 🪵🪵🪵, not a miracle worker."""
+
 PAGE_TEMPLATE = """<!doctype html>
 <title>ceramics</title>
 <style>
@@ -42,7 +56,7 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         current = read_current()
-        body = escape(current) if current else "nothing running yet — ask claude to start something"
+        body = escape(current) if current else EMPTY_MESSAGE
         page = PAGE_TEMPLATE % body
         self.send_response(200)
         self.send_header("Content-Type", "text/html; charset=utf-8")

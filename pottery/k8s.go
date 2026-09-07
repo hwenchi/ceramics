@@ -10,6 +10,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -102,6 +103,21 @@ func buildPodSpec(name, namespace, image string) *corev1.Pod {
 						{Name: "shell", ContainerPort: 7681},
 						{Name: "app", ContainerPort: 8080},
 						{Name: "bat", ContainerPort: 8082},
+					},
+					// Phase flips to Running as soon as the entrypoint
+					// execs, well before ttyd is actually accepting
+					// connections. Probe the shell port so the pod's Ready
+					// condition reflects real reachability instead.
+					ReadinessProbe: &corev1.Probe{
+						ProbeHandler: corev1.ProbeHandler{
+							TCPSocket: &corev1.TCPSocketAction{
+								Port: intstr.FromInt32(7681),
+							},
+						},
+						InitialDelaySeconds: 1,
+						PeriodSeconds:       1,
+						TimeoutSeconds:      1,
+						FailureThreshold:    3,
 					},
 					SecurityContext: &corev1.SecurityContext{
 						AllowPrivilegeEscalation: &falseVal,

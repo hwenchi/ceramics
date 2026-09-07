@@ -88,7 +88,10 @@
       border: 1px solid var(--border);
       border-radius: 0.75rem;
       padding: 0.9rem 1.1rem;
+      transition: opacity 0.15s;
     }
+
+    .row.settling { opacity: 0.55; }
 
     .name { flex: 1; font-weight: 500; display: flex; align-items: center; gap: 0.5rem; }
 
@@ -99,10 +102,20 @@
     }
     .name-link:hover { border-bottom-color: var(--muted); }
 
+    .name-pending {
+      color: var(--muted);
+      cursor: default;
+    }
+
     .actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
     .actions button { font-size: 0.85rem; padding: 0.35rem 0.7rem; }
     .actions .delete { color: var(--danger); }
     .actions .delete:hover { border-color: var(--danger); }
+    .actions button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    .actions button:disabled:hover { border-color: var(--border); }
 
     .dot {
       display: inline-block;
@@ -126,13 +139,14 @@
 
     <div class="rows" x-show="ceramics.length > 0" x-cloak>
       <template x-for="c in ceramics" :key="c.name">
-        <div class="row">
-          <span class="dot" :style="{ background: dotColor(c.phase) }" :title="phaseLabel(c.phase)"></span>
+        <div class="row" :class="{ settling: !isReady(c) }">
+          <span class="dot" :style="{ background: dotColor(c) }" :title="phaseLabel(c)"></span>
           <span class="name">
-            <a class="name-link" :href="c.kilnURL" x-text="c.name"></a>
+            <a x-show="isReady(c)" class="name-link" :href="c.kilnURL" x-text="c.name"></a>
+            <span x-show="!isReady(c)" class="name-pending" :title="phaseLabel(c)" x-text="c.name"></span>
           </span>
           <div class="actions">
-            <button class="delete" @click="smash(c.name)">delete</button>
+            <button class="delete" :disabled="c.deleting" @click="smash(c.name)">delete</button>
           </div>
         </div>
       </template>
@@ -143,21 +157,41 @@
     function ceramicsApp() {
       return {
         ceramics: [],
+        pollHandle: null,
+
+        isReady(c) {
+          return c.ready && !c.deleting;
+        },
 
         async refresh() {
           const res = await fetch('/api/ceramics');
           this.ceramics = await res.json();
+          this.syncPolling();
         },
 
-        phaseLabel(phase) {
-          if (phase === 'Pending') return 'warming up';
-          if (phase === 'Running') return 'ready';
-          return phase;
+        // Poll while anything is still settling (creating or deleting) so
+        // the row's ready/gone state updates without a manual reload.
+        syncPolling() {
+          const settling = this.ceramics.some(c => !this.isReady(c));
+          if (settling && !this.pollHandle) {
+            this.pollHandle = setInterval(() => this.refresh(), 2000);
+          } else if (!settling && this.pollHandle) {
+            clearInterval(this.pollHandle);
+            this.pollHandle = null;
+          }
         },
 
-        dotColor(phase) {
-          if (phase === 'Pending') return '#e6a700';
-          if (phase === 'Running') return '#2ecc71';
+        phaseLabel(c) {
+          if (c.deleting) return 'deleting';
+          if (c.ready) return 'ready';
+          if (c.phase === 'Pending' || c.phase === 'Running') return 'warming up';
+          return c.phase;
+        },
+
+        dotColor(c) {
+          if (c.deleting) return '#999';
+          if (c.ready) return '#2ecc71';
+          if (c.phase === 'Pending' || c.phase === 'Running') return '#e6a700';
           return '#999';
         },
 
@@ -165,6 +199,10 @@
           if (!confirm('this can\'t be undone unless you already pushed it somewhere')) {
             return;
           }
+          // Mark it settling right away — no need to wait for the next poll.
+          const c = this.ceramics.find(c => c.name === name);
+          if (c) c.deleting = true;
+          this.syncPolling();
           await fetch('/api/ceramics/' + encodeURIComponent(name), { method: 'DELETE' });
           await this.refresh();
         },

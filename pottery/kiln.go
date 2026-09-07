@@ -4,6 +4,8 @@ import (
 	"embed"
 	"html/template"
 	"net/http"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 //go:embed templates/kiln.html templates/home.html
@@ -31,14 +33,20 @@ type kilnPage struct {
 	BatURL   string
 }
 
-// kilnHandler serves the split-pane view of one ceramic at /kiln/{name}.
-type kilnHandler struct {
-	domain string // e.g. "software-dev.ncsa.illinois.edu"
-}
-
-func (k *kilnHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+// handleKiln serves the split-pane view of one ceramic at /kiln/{name} — but
+// only once it's actually reachable. A ceramic that doesn't exist, is still
+// starting up, or is being deleted sends the visitor back to the studio
+// instead of a page full of panels with nothing to connect to; the studio's
+// own polling already tells them what's going on.
+func (s *server) handleKiln(w http.ResponseWriter, r *http.Request) {
 	name := r.PathValue("name")
-	clay, glaze, bat := ceramicHostnames(name, k.domain)
+	pod, err := s.clientset.CoreV1().Pods(s.namespace).Get(r.Context(), name, metav1.GetOptions{})
+	if err != nil || pod.DeletionTimestamp != nil || !podReady(*pod) {
+		http.Redirect(w, r, "/", http.StatusFound)
+		return
+	}
+
+	clay, glaze, bat := ceramicHostnames(name, s.domain)
 	page := kilnPage{
 		Name:     name,
 		ClayURL:  "https://" + clay,

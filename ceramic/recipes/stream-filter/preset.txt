@@ -1,0 +1,2 @@
+VIDEO_FILTER = "tmix=frames=8"   # long exposure
+AUDIO_FILTER = "atempo=0.8"      # slow/deep

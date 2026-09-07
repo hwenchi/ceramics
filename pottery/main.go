@@ -61,7 +61,7 @@ func main() {
 	apiMux.HandleFunc("GET /api/ceramics", s.handleList)
 	apiMux.HandleFunc("POST /api/ceramics", s.handleCreate)
 	apiMux.HandleFunc("DELETE /api/ceramics/{name}", s.handleDelete)
-	apiMux.Handle("GET /kiln/{name}", &kilnHandler{domain: domain})
+	apiMux.HandleFunc("GET /kiln/{name}", s.handleKiln)
 
 	proxy := &ceramicProxy{resolver: s.resolver, potteryOrigin: potteryOrigin}
 
