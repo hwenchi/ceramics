@@ -9,5 +9,9 @@ spec:
       - "--certificatesresolvers.letsencrypt.acme.email=wenqihe2@illinois.edu"
       - "--certificatesresolvers.letsencrypt.acme.storage=/data/acme.json"
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--entryPoints.web.http.redirections.entryPoint.to=:443"
+      - "--entryPoints.web.http.redirections.entryPoint.scheme=https"
+      - "--entryPoints.web.http.redirections.entryPoint.priority=9999"
+      - "--entryPoints.web.http.redirections.entryPoint.permanent=true"
     persistence:
       enabled: true
