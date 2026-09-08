@@ -1,0 +1,16 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: pottery
+  namespace: ceramics
+spec:
+  routes:
+    - match: HostRegexp(`^(ceramics|[a-z]+-[a-z]+-(clay|glaze|bat))\.141\.142\.218\.86\.nip\.io$`)
+      kind: Rule
+      services:
+        - name: pottery
+          port: 80
+  tls:
+    certResolver: letsencrypt
+    domains:
+      - main: ceramics.141.142.218.86.nip.io
