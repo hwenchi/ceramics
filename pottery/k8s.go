@@ -131,7 +131,7 @@ func buildPodSpec(name, namespace, image string) *corev1.Pod {
 						},
 						Limits: corev1.ResourceList{
 							corev1.ResourceCPU:              resource.MustParse("2"),
-							corev1.ResourceMemory:           resource.MustParse("2Gi"),
+							corev1.ResourceMemory:           resource.MustParse("4Gi"),
 							corev1.ResourceEphemeralStorage: resource.MustParse("8Gi"),
 						},
 					},
@@ -168,9 +168,9 @@ func (s *server) createCeramic(ctx context.Context) (*corev1.Pod, error) {
 		return nil, err
 	}
 
-	clay, glaze, bat := ceramicHostnames(name, s.domain)
+	clay, glaze, bat, vent := ceramicHostnames(name, s.domain)
 	err = s.setIngressRouteDomains(ctx, func(domains []interface{}) []interface{} {
-		return domainListWith(domainListWith(domainListWith(domains, clay), glaze), bat)
+		return domainListWith(domainListWith(domainListWith(domainListWith(domains, clay), glaze), bat), vent)
 	})
 	if err != nil {
 		// Non-fatal: the ceramic still works, just without a real cert
@@ -192,9 +192,9 @@ func (s *server) deleteCeramic(ctx context.Context, name string) error {
 		s.resolver.evict(name)
 	}
 
-	clay, glaze, bat := ceramicHostnames(name, s.domain)
+	clay, glaze, bat, vent := ceramicHostnames(name, s.domain)
 	ingressErr := s.setIngressRouteDomains(ctx, func(domains []interface{}) []interface{} {
-		return domainListWithout(domainListWithout(domainListWithout(domains, clay), glaze), bat)
+		return domainListWithout(domainListWithout(domainListWithout(domainListWithout(domains, clay), glaze), bat), vent)
 	})
 	if ingressErr != nil {
 		log.Printf("warning: could not remove domains for %s: %v", name, ingressErr)

@@ -35,7 +35,7 @@ func podReady(p corev1.Pod) bool {
 }
 
 func (s *server) toCeramic(p corev1.Pod) Ceramic {
-	clay, glaze, bat := ceramicHostnames(p.Name, s.domain)
+	clay, glaze, bat, _ := ceramicHostnames(p.Name, s.domain)
 	return Ceramic{
 		Name:      p.Name,
 		Phase:     string(p.Status.Phase),

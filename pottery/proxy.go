@@ -46,6 +46,15 @@ func notYetGlazed(w http.ResponseWriter, r *http.Request, err error) {
 	w.Write([]byte("nothing here yet — ask claude to build something"))
 }
 
+// nothingInTheVent answers the vent when nothing is running there, which is
+// its default state — an empty slot, so a dead connection is expected rather
+// than a fault.
+func nothingInTheVent(w http.ResponseWriter, r *http.Request, err error) {
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusServiceUnavailable)
+	w.Write([]byte("told you so 🙄"))
+}
+
 // fallbackToConsole serves the ceramic's always-on console (a persistent
 // process, from pod boot, that tails whatever's running and writing to
 // /var/log/console.log) when nothing is listening on the glaze port yet —
@@ -82,16 +91,23 @@ const (
 	claySuffix  = "-clay"
 	glazeSuffix = "-glaze"
 	batSuffix   = "-bat"
+	ventSuffix  = "-vent"
 	shellPort   = "7681"
 	appPort     = "8080"
 	consolePort = "8081"
 	batPort     = "8082"
+	ventPort    = "8083"
 )
 
 // ceramicHostnames builds a ceramic's surface hostnames from its name and
-// the cluster's domain (e.g. "software-dev.ncsa.illinois.edu").
-func ceramicHostnames(name, domain string) (clay, glaze, bat string) {
-	return name + claySuffix + "." + domain, name + glazeSuffix + "." + domain, name + batSuffix + "." + domain
+// the cluster's domain (e.g. "software-dev.ncsa.illinois.edu"). The vent is
+// a spare port with nothing on it by default — whatever you start in the
+// container on ventPort is reachable there. The kiln doesn't link to it.
+func ceramicHostnames(name, domain string) (clay, glaze, bat, vent string) {
+	return name + claySuffix + "." + domain,
+		name + glazeSuffix + "." + domain,
+		name + batSuffix + "." + domain,
+		name + ventSuffix + "." + domain
 }
 
 // parseHost splits a Host header like "cracked-vase-clay.software-dev...:443"
@@ -110,6 +126,8 @@ func parseHost(host string) (name string, port string, ok bool) {
 		return strings.TrimSuffix(label, glazeSuffix), appPort, true
 	case strings.HasSuffix(label, batSuffix):
 		return strings.TrimSuffix(label, batSuffix), batPort, true
+	case strings.HasSuffix(label, ventSuffix):
+		return strings.TrimSuffix(label, ventSuffix), ventPort, true
 	default:
 		return "", "", false
 	}
@@ -138,6 +156,9 @@ func (p *ceramicProxy) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if port == appPort {
 		proxy.ModifyResponse = allowFraming(p.potteryOrigin)
 		proxy.ErrorHandler = fallbackToConsole(ip, p.potteryOrigin, p.resolver.evict, name)
+	}
+	if port == ventPort {
+		proxy.ErrorHandler = nothingInTheVent
 	}
 	proxy.ServeHTTP(w, r)
 }

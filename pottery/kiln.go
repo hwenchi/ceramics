@@ -31,6 +31,7 @@ type kilnPage struct {
 	ClayURL  string
 	GlazeURL string
 	BatURL   string
+	VentURL  string
 }
 
 // handleKiln serves the split-pane view of one ceramic at /kiln/{name} — but
@@ -46,12 +47,13 @@ func (s *server) handleKiln(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	clay, glaze, bat := ceramicHostnames(name, s.domain)
+	clay, glaze, bat, vent := ceramicHostnames(name, s.domain)
 	page := kilnPage{
 		Name:     name,
 		ClayURL:  "https://" + clay,
 		GlazeURL: "https://" + glaze,
 		BatURL:   "https://" + bat,
+		VentURL:  "https://" + vent,
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := kilnTemplate.Execute(w, page); err != nil {

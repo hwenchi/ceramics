@@ -121,6 +121,8 @@
       text-decoration: none;
     }
     .back:hover { border-color: var(--muted); }
+
+    .vent { width: auto; margin-left: auto; }
   </style>
   <script src="/static/alpine.min.js" defer></script>
 </head>
@@ -130,6 +132,7 @@
     <button class="left-toggle" @click="showLeft = !showLeft" x-text="showLeft ? 'hide panel' : 'show panel'"></button>
     <button class="refresh" @click="$refs.glaze.src += ''">refresh</button>
     <button class="share" @click="window.open('{{.GlazeURL}}', '_blank')">share</button>
+    <button class="vent" @click="window.open('{{.VentURL}}', '_blank')">woah woah woah, where do you think you're going? nothing to see here</button>
   </div>
   <div class="content">
     <div class="left" :class="{ collapsed: !showLeft }">
