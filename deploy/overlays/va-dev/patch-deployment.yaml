@@ -10,6 +10,6 @@ spec:
         - name: pottery
           env:
             - name: POTTERY_ORIGIN
-              value: https://ceramics.141.142.218.86.nip.io
+              value: https://ceramics.myeatmovesave.visari.org
             - name: CERAMIC_DOMAIN
-              value: 141.142.218.86.nip.io
+              value: myeatmovesave.visari.org

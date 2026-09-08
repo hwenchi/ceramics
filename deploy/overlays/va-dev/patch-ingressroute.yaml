@@ -5,7 +5,7 @@ metadata:
   namespace: ceramics
 spec:
   routes:
-    - match: HostRegexp(`^(ceramics|[a-z]+-[a-z]+-(clay|glaze|bat|vent))\.141\.142\.218\.86\.nip\.io$`)
+    - match: HostRegexp(`^(ceramics|[a-z]+-[a-z]+-(clay|glaze|bat|vent))\.myeatmovesave\.visari\.org$`)
       kind: Rule
       services:
         - name: pottery
@@ -13,4 +13,4 @@ spec:
   tls:
     certResolver: letsencrypt
     domains:
-      - main: ceramics.141.142.218.86.nip.io
+      - main: ceramics.myeatmovesave.visari.org
