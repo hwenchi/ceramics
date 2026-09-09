@@ -5,7 +5,14 @@ metadata:
   namespace: ceramics
 spec:
   routes:
-    - match: HostRegexp(`^(ceramics|[a-z]+-[a-z]+-(clay|glaze|bat|vent))\.myeatmovesave\.visari\.org$`)
+    - match: HostRegexp(`^(ceramics|[a-z]+-[a-z]+-(clay|bat|vent))\.myeatmovesave\.visari\.org$`)
+      kind: Rule
+      middlewares:
+        - name: studio-auth
+      services:
+        - name: pottery
+          port: 80
+    - match: HostRegexp(`^[a-z]+-[a-z]+-glaze\.myeatmovesave\.visari\.org$`)
       kind: Rule
       services:
         - name: pottery

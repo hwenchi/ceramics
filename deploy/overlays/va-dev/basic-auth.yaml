@@ -1,0 +1,17 @@
+# FIXME: stopgap credentials, in the repo on purpose. Replace with #8.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: studio-auth-users
+  namespace: ceramics
+stringData:
+  users: "user:$2y$05$bxl0R9VfQk3UQXmfaLCObO4L8u4HqjpUOLGd2Wtv37MStHhAdNYdC"
+---
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: studio-auth
+  namespace: ceramics
+spec:
+  basicAuth:
+    secret: studio-auth-users
