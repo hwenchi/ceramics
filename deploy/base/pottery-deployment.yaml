@@ -72,7 +72,8 @@ spec:
       services:
         - name: pottery
           port: 80
+  # No spec.tls.domains: pottery maintains that list at runtime as ceramics come
+  # and go, so declaring it here is what made every apply wipe the live
+  # registrations (#5). Apply with --server-side, and the field stays pottery's.
   tls:
     certResolver: letsencrypt
-    domains:
-      - main: ceramics.software-dev.ncsa.illinois.edu

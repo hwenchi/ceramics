@@ -10,6 +10,6 @@ spec:
         - name: pottery
           env:
             - name: POTTERY_ORIGIN
-              value: https://ceramics.myeatmovesave.visari.org
+              value: https://ceramics.platform.visari.org
             - name: CERAMIC_DOMAIN
-              value: myeatmovesave.visari.org
+              value: platform.visari.org
