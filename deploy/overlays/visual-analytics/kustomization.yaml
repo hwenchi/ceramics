@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - ../../base
   - basic-auth.yaml
+  - sealed-secret-studio-auth.yaml
 patches:
   - target:
       kind: Deployment
