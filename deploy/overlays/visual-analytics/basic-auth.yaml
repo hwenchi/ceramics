@@ -1,0 +1,10 @@
+# FIXME: stopgap until #8. The studio-auth-users Secret it references is
+# applied separately and gitignored — this repo is public.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: studio-auth
+  namespace: ceramics
+spec:
+  basicAuth:
+    secret: studio-auth-users
