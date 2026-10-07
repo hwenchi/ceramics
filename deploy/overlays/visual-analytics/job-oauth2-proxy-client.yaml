@@ -1,0 +1,54 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: oauth2-proxy-client
+  namespace: ceramics
+  annotations:
+    argocd.argoproj.io/sync-options: Force=true,Replace=true
+spec:
+  backoffLimit: 4
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: kcadm
+          image: quay.io/keycloak/keycloak:26.7.3
+          command: ["/bin/bash", "-euo", "pipefail", "-c"]
+          args:
+            - |
+              export PATH="/opt/keycloak/bin:$PATH"
+
+              kcadm.sh config credentials --server "$KEYCLOAK_URL" --realm "$KEYCLOAK_REALM" \
+                --client "$KEYCLOAK_CLIENT_ID" --secret "$KEYCLOAK_CLIENT_SECRET"
+
+              id=$(kcadm.sh get clients -r "$KEYCLOAK_REALM" -q clientId=oauth2-proxy \
+                --fields id --format csv --noquotes)
+              if [ -z "$id" ]; then
+                kcadm.sh create clients -r "$KEYCLOAK_REALM" -s clientId=oauth2-proxy
+                id=$(kcadm.sh get clients -r "$KEYCLOAK_REALM" -q clientId=oauth2-proxy \
+                  --fields id --format csv --noquotes)
+              fi
+
+              kcadm.sh update "clients/$id" -r "$KEYCLOAK_REALM" \
+                -s publicClient=false \
+                -s standardFlowEnabled=true \
+                -s directAccessGrantsEnabled=false \
+                -s serviceAccountsEnabled=false \
+                -s 'redirectUris=["https://ceramics.platform.visari.org/oauth2/callback"]' \
+                -s "secret=$OAUTH2_PROXY_CLIENT_SECRET"
+              echo "oauth2-proxy client $id is up to date"
+          envFrom:
+            - secretRef:
+                name: ceramics
+          env:
+            - name: OAUTH2_PROXY_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: oauth2-proxy
+                  key: client-secret
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              memory: 512Mi
