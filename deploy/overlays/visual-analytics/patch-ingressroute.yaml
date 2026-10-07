@@ -5,8 +5,16 @@ metadata:
   namespace: ceramics
 spec:
   routes:
+    - match: Host(`ceramics.platform.visari.org`) && PathPrefix(`/oauth2/`)
+      kind: Rule
+      priority: 1000
+      services:
+        - name: oauth2-proxy
+          port: 80
     - match: Host(`ceramics.platform.visari.org`) || HostRegexp(`^[a-z]+-[a-z]+-(clay|bat|vent)\.ceramics\.platform\.visari\.org$`)
       kind: Rule
+      middlewares:
+        - name: oauth2-proxy
       services:
         - name: pottery
           port: 80

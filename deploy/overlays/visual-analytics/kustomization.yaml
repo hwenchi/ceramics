@@ -3,7 +3,9 @@ kind: Kustomization
 resources:
   - ../../base
   - sealed-secret-oauth2-proxy.yaml
-  - job-oauth2-proxy-client.yaml
+  - job-keycloak-setup.yaml
+  - oauth2-proxy.yaml
+  - middleware-oauth2-proxy.yaml
 patches:
   - target:
       kind: Deployment

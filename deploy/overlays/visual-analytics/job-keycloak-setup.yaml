@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: oauth2-proxy-client
+  name: keycloak-setup
   namespace: ceramics
   annotations:
     argocd.argoproj.io/sync-options: Force=true,Replace=true
@@ -20,6 +20,17 @@ spec:
 
               kcadm.sh config credentials --server "$KEYCLOAK_URL" --realm "$KEYCLOAK_REALM" \
                 --client "$KEYCLOAK_CLIENT_ID" --secret "$KEYCLOAK_CLIENT_SECRET"
+
+              kcadm.sh update "realms/$KEYCLOAK_REALM" \
+                -s registrationAllowed=true \
+                -s verifyEmail=true \
+                -s 'smtpServer={"host":"outbound-relays.techservices.illinois.edu","port":"25","from":"no-reply@illinois.edu","fromDisplayName":"Ceramics","starttls":"false","ssl":"false","auth":"false"}'
+              echo "realm $KEYCLOAK_REALM is up to date"
+
+              if ! kcadm.sh get roles/ceramics-user -r "$KEYCLOAK_REALM" >/dev/null 2>&1; then
+                kcadm.sh create roles -r "$KEYCLOAK_REALM" -s name=ceramics-user
+              fi
+              echo "role ceramics-user exists"
 
               id=$(kcadm.sh get clients -r "$KEYCLOAK_REALM" -q clientId=oauth2-proxy \
                 --fields id --format csv --noquotes)
