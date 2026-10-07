@@ -5,12 +5,12 @@ metadata:
   namespace: ceramics
 spec:
   routes:
-    - match: HostRegexp(`^(ceramics|[a-z]+-[a-z]+-(clay|bat|vent))\.platform\.visari\.org$`)
+    - match: Host(`ceramics.platform.visari.org`) || HostRegexp(`^[a-z]+-[a-z]+-(clay|bat|vent)\.ceramics\.platform\.visari\.org$`)
       kind: Rule
       services:
         - name: pottery
           port: 80
-    - match: HostRegexp(`^[a-z]+-[a-z]+-glaze\.platform\.visari\.org$`)
+    - match: HostRegexp(`^[a-z]+-[a-z]+-glaze\.ceramics\.platform\.visari\.org$`)
       kind: Rule
       services:
         - name: pottery
