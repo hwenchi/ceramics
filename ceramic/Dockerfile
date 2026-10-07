@@ -10,19 +10,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
         gnupg \
         python3 \
+        procps \
+        iproute2 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
+ENV TTYD_VERSION=1.7.7
 RUN case "$(dpkg --print-architecture)" in \
         amd64) ARCH=x86_64 ;; \
         arm64) ARCH=aarch64 ;; \
         *) echo "unsupported architecture" >&2; exit 1 ;; \
     esac \
     && curl -fsSL -o /usr/local/bin/ttyd \
-        "https://github.com/tsl0922/ttyd/releases/latest/download/ttyd.${ARCH}" \
+        "https://github.com/tsl0922/ttyd/releases/download/${TTYD_VERSION}/ttyd.${ARCH}" \
     && chmod +x /usr/local/bin/ttyd
 
 ENV DUFS_VERSION=v0.46.0
@@ -37,7 +40,7 @@ RUN case "$(dpkg --print-architecture)" in \
     && chmod +x /usr/local/bin/dufs \
     && rm -rf /tmp/dufs*
 
-RUN npm install -g @anthropic-ai/claude-code
+RUN npm install -g @anthropic-ai/claude-code @opencode/cli
 
 COPY CLAUDE.md /root/.claude/CLAUDE.md
 COPY start.sh /usr/local/bin/start.sh
